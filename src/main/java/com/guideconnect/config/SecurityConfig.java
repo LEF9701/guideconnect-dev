@@ -68,6 +68,8 @@ public class SecurityConfig {
                 .accessDeniedPage("/error/403")
             );
 
+        http.csrf(csrf -> csrf.disable());
+        http.headers(headers -> headers.frameOptions(f -> f.disable()));
         return http.build();
     }
 }
