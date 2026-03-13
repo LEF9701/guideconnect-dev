@@ -51,7 +51,7 @@
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
 
-        <!-- PostgreSQL -->
+        <!-- h2 -->
          <dependency>
              <groupId>com.h2database</groupId>
              <artifactId>h2</artifactId>
