@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Messages - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <!-- Booking Header -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h4 class="mb-1" th:text="${booking.tour.title}">Tour Name</h4>
+                    <span class="text-muted">
+                        Booking #<span th:text="${booking.id}">123</span>
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge"
+                          th:classappend="${booking.status.name() == 'CONFIRMED' ? 'bg-success' :
+                                            booking.status.name() == 'NEGOTIATING' ? 'bg-warning text-dark' :
+                                            booking.status.name() == 'REQUESTED' ? 'bg-info' :
+                                            booking.status.name() == 'COMPLETED' ? 'bg-secondary' : 'bg-danger'}"
+                          th:text="${booking.status}">CONFIRMED</span>
+                    <div class="text-muted small">
+                        <i class="bi bi-people"></i>
+                        <span th:text="${booking.tourist.displayName}">Tourist</span> &amp;
+                        <span th:text="${booking.guide.displayName}">Guide</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body" id="messageContainer" style="height: 500px; overflow-y: auto;">
+            <div th:if="${messages == null or #lists.isEmpty(messages)}" class="text-center py-5">
+                <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">No messages yet. Start the conversation!</p>
+            </div>
+
+            <div th:each="msg : ${messages}" class="mb-3">
+                <!-- Own messages: right-aligned -->
+                <div th:if="${msg.sender.id == user.id}" class="d-flex justify-content-end">
+                    <div class="bg-primary text-white rounded p-3" style="max-width: 70%;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-bold" th:text="${msg.sender.displayName}">You</small>
+                            <small class="ms-3 opacity-75"
+                                   th:text="${#temporals.format(msg.timestamp, 'MMM dd, HH:mm')}">Jan 01, 09:00</small>
+                        </div>
+                        <p class="mb-1" th:text="${msg.content}">Message content</p>
+                        <div class="text-end">
+                            <form th:action="@{/messages/{id}/flag(id=${msg.id})}" method="post" class="d-inline">
+                                <input type="hidden" name="bookingId" th:value="${booking.id}"/>
+                                <button type="submit" class="btn btn-sm btn-link text-white-50 p-0"
+                                        title="Flag message">
+                                    <i class="bi bi-flag"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other's messages: left-aligned -->
+                <div th:if="${msg.sender.id != user.id}" class="d-flex justify-content-start">
+                    <div class="bg-light rounded p-3" style="max-width: 70%;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-bold" th:text="${msg.sender.displayName}">Other User</small>
+                            <small class="ms-3 text-muted"
+                                   th:text="${#temporals.format(msg.timestamp, 'MMM dd, HH:mm')}">Jan 01, 09:00</small>
+                        </div>
+                        <p class="mb-1" th:text="${msg.content}">Message content</p>
+                        <div class="text-end">
+                            <form th:action="@{/messages/{id}/flag(id=${msg.id})}" method="post" class="d-inline">
+                                <input type="hidden" name="bookingId" th:value="${booking.id}"/>
+                                <button type="submit" class="btn btn-sm btn-link text-muted p-0"
+                                        title="Flag message">
+                                    <i class="bi bi-flag"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="card-footer bg-white">
+            <form th:action="@{/messages/booking/{id}(id=${booking.id})}" method="post">
+                <div class="input-group">
+                    <textarea class="form-control" name="content" rows="2"
+                              placeholder="Type your message..." required></textarea>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Booking
+        </a>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var container = document.getElementById('messageContainer');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+</script>
+</body>
+</html>

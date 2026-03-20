@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Dispute Resolution - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <h2 class="mb-4">Dispute Resolution</h2>
+
+    <div th:if="${disputes == null or disputes.totalElements == 0}" class="text-center py-5">
+        <i class="bi bi-shield-check" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-2">No disputes to display.</p>
+    </div>
+
+    <!-- Disputes List -->
+    <div th:each="dispute : ${disputes.content}" class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">
+                    Dispute #<span th:text="${dispute.id}">1</span>
+                    <span th:if="${dispute.booking != null}">
+                        - Booking #<span th:text="${dispute.booking.id}">123</span>
+                    </span>
+                </h5>
+            </div>
+            <span class="badge"
+                  th:classappend="${dispute.status.name() == 'OPEN' ? 'bg-danger' :
+                                    dispute.status.name() == 'UNDER_REVIEW' ? 'bg-warning text-dark' :
+                                    dispute.status.name() == 'RESOLVED' ? 'bg-success' : 'bg-info'}"
+                  th:text="${dispute.status}">OPEN</span>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <strong>Reporter:</strong>
+                    <span th:text="${dispute.reporter.displayName}">Reporter Name</span>
+                </div>
+                <div class="col-md-4">
+                    <strong>Created:</strong>
+                    <span th:text="${#temporals.format(dispute.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2026</span>
+                </div>
+                <div class="col-md-4" th:if="${dispute.resolvedAt}">
+                    <strong>Resolved:</strong>
+                    <span th:text="${#temporals.format(dispute.resolvedAt, 'MMM dd, yyyy HH:mm')}">Jan 02, 2026</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <strong>Description:</strong>
+                <p class="mb-0" th:text="${dispute.description}">Dispute description text.</p>
+            </div>
+
+            <!-- Resolution (if resolved) -->
+            <div th:if="${dispute.status.name() == 'RESOLVED' and dispute.resolution != null}"
+                 class="alert alert-success">
+                <strong>Resolution:</strong>
+                <p class="mb-0" th:text="${dispute.resolution}">Resolution text.</p>
+            </div>
+
+            <!-- Resolution Form (if open or under review) -->
+            <div th:if="${dispute.status.name() == 'OPEN' or dispute.status.name() == 'UNDER_REVIEW'}"
+                 class="border rounded p-3 bg-light">
+                <h6>Resolve This Dispute</h6>
+                <form th:action="@{/admin/disputes/{id}/resolve(id=${dispute.id})}" method="post">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="resolution" rows="3"
+                                  placeholder="Enter resolution details..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Resolve Dispute
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

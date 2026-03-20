@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="header" class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">
+            <i class="bi bi-compass"></i> GuideConnect
+        </a>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <!-- Public links -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tours/search}">Browse Tours</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+                <!-- TOURIST links -->
+                <li class="nav-item" sec:authorize="hasRole('TOURIST')">
+                    <a class="nav-link" th:href="@{/tourist/dashboard}">Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('TOURIST')">
+                    <a class="nav-link" th:href="@{/tourist/bookings}">My Bookings</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('TOURIST')">
+                    <a class="nav-link" th:href="@{/messages}">Messages</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('TOURIST')">
+                    <a class="nav-link" th:href="@{/tourist/profile}">Profile</a>
+                </li>
+
+                <!-- GUIDE links -->
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/guide/dashboard}">Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/guide/tours}">My Tours</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/guide/requests}">Requests</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/messages}">Messages</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/guide/earnings}">Earnings</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('GUIDE')">
+                    <a class="nav-link" th:href="@{/guide/profile}">Profile</a>
+                </li>
+
+                <!-- ADMIN links -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/dashboard}">Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/users}">Users</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/disputes}">Disputes</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:href="@{/admin/reports}">Reports</a>
+                </li>
+
+                <!-- Logout for any authenticated user -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
+                        <button type="submit" class="nav-link btn btn-link">Logout</button>
+                    </form>
+                </li>
+
+                <!-- Anonymous links -->
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" th:href="@{/auth/login}">Login</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link btn btn-outline-light btn-sm ms-2 px-3" th:href="@{/auth/register}">Sign Up</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<head th:fragment="head">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${pageTitle != null ? pageTitle + ' - GuideConnect' : 'GuideConnect'}">GuideConnect</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+
+<footer th:fragment="footer" class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h6 class="fw-bold"><i class="bi bi-compass"></i> GuideConnect</h6>
+                <p class="text-muted small">Connecting travelers with local guides worldwide.</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="fw-bold">Quick Links</h6>
+                <ul class="list-unstyled small">
+                    <li><a th:href="@{/tours/search}" class="text-muted text-decoration-none">Browse Tours</a></li>
+                    <li><a th:href="@{/auth/register}" class="text-muted text-decoration-none">Become a Guide</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <p class="text-muted small mb-0">&copy; 2026 GuideConnect. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<div th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+</div>
+</body>
+</html>

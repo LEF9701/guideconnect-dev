@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Admin Dashboard - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <!-- Summary Metric Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Users</p>
+                            <h3 class="mb-0" th:text="${totalUsers}">0</h3>
+                        </div>
+                        <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-success border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Tour Listings</p>
+                            <h3 class="mb-0" th:text="${totalTours}">0</h3>
+                        </div>
+                        <i class="bi bi-map-fill text-success" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-info border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Bookings</p>
+                            <h3 class="mb-0" th:text="${totalBookings}">0</h3>
+                        </div>
+                        <i class="bi bi-calendar-check-fill text-info" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted mb-1 small">Simulated Revenue</p>
+                            <h3 class="mb-0" th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 2)}">$0.00</h3>
+                            <small class="text-muted" th:text="'Commission: $' + ${#numbers.formatDecimal(totalCommission, 1, 2)}">Commission: $0.00</small>
+                        </div>
+                        <i class="bi bi-currency-dollar text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Open Disputes -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Open Disputes</h5>
+                    <a th:href="@{/admin/disputes}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div th:if="${openDisputes == null or #lists.isEmpty(openDisputes)}" class="text-center py-3">
+                        <p class="text-muted mb-0">No open disputes.</p>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div th:each="dispute : ${openDisputes}" class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>Booking #<span th:text="${dispute.booking != null ? dispute.booking.id : 'N/A'}">123</span></strong>
+                                    <p class="text-muted small mb-1"
+                                       th:text="'Reporter: ' + ${dispute.reporter.displayName}">Reporter: User</p>
+                                    <p class="small mb-0"
+                                       th:text="${#strings.abbreviate(dispute.description, 100)}">Description...</p>
+                                </div>
+                                <a th:href="@{/admin/disputes/{id}(id=${dispute.id})}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    Review
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Registrations -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Registrations</h5>
+                    <a th:href="@{/admin/users}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${recentUsers}">
+                                <td th:text="${user.displayName}">User Name</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${user.role.name() == 'GUIDE' ? 'bg-primary' :
+                                                            user.role.name() == 'TOURIST' ? 'bg-info' : 'bg-dark'}"
+                                          th:text="${user.role}">TOURIST</span>
+                                </td>
+                                <td class="small"
+                                    th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy')}">Jan 01, 2026</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${user.status.name() == 'ACTIVE' ? 'bg-success' :
+                                                            user.status.name() == 'SUSPENDED' ? 'bg-warning text-dark' : 'bg-danger'}"
+                                          th:text="${user.status}">ACTIVE</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings by Status -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Bookings by Status</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${bookingsByStatus}">
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${entry.key == 'CONFIRMED' ? 'bg-success' :
+                                                    entry.key == 'NEGOTIATING' ? 'bg-warning text-dark' :
+                                                    entry.key == 'REQUESTED' ? 'bg-info' :
+                                                    entry.key == 'COMPLETED' ? 'bg-secondary' : 'bg-danger'}"
+                                  th:text="${entry.key}">STATUS</span>
+                        </td>
+                        <td th:text="${entry.value}">0</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar"
+                                     th:classappend="${entry.key == 'CONFIRMED' ? 'bg-success' :
+                                                        entry.key == 'NEGOTIATING' ? 'bg-warning' :
+                                                        entry.key == 'REQUESTED' ? 'bg-info' :
+                                                        entry.key == 'COMPLETED' ? 'bg-secondary' : 'bg-danger'}"
+                                     role="progressbar"
+                                     th:style="'width: ' + (${totalBookings > 0 ? (entry.value * 100 / totalBookings) : 0}) + '%'"
+                                     th:text="${totalBookings > 0 ? #numbers.formatDecimal(entry.value * 100.0 / totalBookings, 1, 1) + '%' : '0%'}">0%</div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>
