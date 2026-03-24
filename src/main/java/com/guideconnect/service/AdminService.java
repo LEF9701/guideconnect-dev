@@ -93,6 +93,21 @@ public class AdminService {
     }
 
     /**
+     * Retrieves disputes that still require admin attention.
+     * Includes OPEN, UNDER_REVIEW, and ESCALATED statuses.
+     *
+     * @param limit the maximum number of active disputes to return
+     * @return list of active disputes ordered by creation date descending
+     */
+    public List<Dispute> getActiveDisputes(int limit) {
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return disputeRepository.findByStatusIn(
+                List.of(DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW, DisputeStatus.ESCALATED),
+                pageable
+        ).getContent();
+    }
+
+    /**
      * Resolves a dispute by recording the resolution text and optionally
      * taking action against a user (suspend or ban). The dispute status
      * is set to RESOLVED and the resolution timestamp is recorded.

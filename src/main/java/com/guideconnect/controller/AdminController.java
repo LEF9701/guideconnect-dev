@@ -56,7 +56,7 @@ public class AdminController {
         java.util.Map<String, Object> metrics = adminService.getDashboardMetrics();
         model.addAllAttributes(metrics);
         model.addAttribute("recentUsers", adminService.getRecentRegistrations(10));
-        model.addAttribute("openDisputes", adminService.getAllDisputes(PageRequest.of(0, 5)).getContent());
+        model.addAttribute("openDisputes", adminService.getActiveDisputes(5));
         return "admin/dashboard";
     }
 

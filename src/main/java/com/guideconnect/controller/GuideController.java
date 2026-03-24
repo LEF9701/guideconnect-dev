@@ -1,8 +1,11 @@
 package com.guideconnect.controller;
 
 import com.guideconnect.model.TourListing;
+import com.guideconnect.model.BookingStatus;
+import java.util.List;
 import com.guideconnect.model.User;
 import com.guideconnect.service.BookingService;
+import com.guideconnect.service.ReviewService;
 import com.guideconnect.service.TourService;
 import com.guideconnect.service.UserService;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.data.domain.Sort;
 
 /**
  * Controller for guide-facing pages.
@@ -29,6 +33,7 @@ public class GuideController {
     private final UserService userService;
     private final TourService tourService;
     private final BookingService bookingService;
+    private final ReviewService reviewService;
 
     /**
      * Constructs a {@code GuideController} with the required service dependencies.
@@ -39,10 +44,12 @@ public class GuideController {
      */
     public GuideController(UserService userService,
                            TourService tourService,
-                           BookingService bookingService) {
+                           BookingService bookingService,
+                           ReviewService reviewService) {
         this.userService = userService;
         this.tourService = tourService;
         this.bookingService = bookingService;
+        this.reviewService = reviewService;
     }
 
     /**
@@ -60,7 +67,17 @@ public class GuideController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         model.addAttribute("user", user);
         model.addAttribute("tours", tourService.findByGuide(user.getId()));
-        model.addAttribute("bookings", bookingService.findByGuide(user.getId(), PageRequest.of(0, 10)));
+        model.addAttribute("bookings", bookingService.findByGuideAndStatusIn(
+                user.getId(),
+                List.of(BookingStatus.REQUESTED, BookingStatus.NEGOTIATING),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))));
+        model.addAttribute("upcomingTours", bookingService.findByGuideAndStatusIn(
+                user.getId(),
+                List.of(BookingStatus.CONFIRMED),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "requestedDate").and(Sort.by(Sort.Direction.ASC, "requestedTime")))));
+        model.addAttribute("reviews", reviewService.getReviewsForUser(
+                user.getId(),
+                PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))));
         return "guide/dashboard";
     }
 
@@ -91,7 +108,7 @@ public class GuideController {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         userService.updateGuideProfile(user.getId(), updatedUser.getDisplayName(),
-                updatedUser.getBiography(), updatedUser.getLanguagesSpoken());
+                updatedUser.getBiography(), updatedUser.getLanguagesSpoken(), updatedUser.getGuidePricing());
         return "redirect:/guide/profile";
     }
 
@@ -186,7 +203,10 @@ public class GuideController {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         model.addAttribute("user", user);
-        model.addAttribute("requests", bookingService.findByGuide(user.getId(), PageRequest.of(0, 50)));
+        model.addAttribute("requests", bookingService.findByGuideAndStatusIn(
+                user.getId(),
+                List.of(BookingStatus.REQUESTED, BookingStatus.NEGOTIATING),
+                PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt"))));
         return "guide/requests";
     }
 }

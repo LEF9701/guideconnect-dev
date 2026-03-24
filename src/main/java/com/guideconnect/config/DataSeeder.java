@@ -194,6 +194,7 @@ public class DataSeeder implements CommandLineRunner {
             u.setStatus(AccountStatus.ACTIVE);
             u.setLanguagesSpoken(String.join(", ", guideLanguages[i - 1]));
             u.setBiography(String.format(bios[random.nextInt(bios.length)], city, yearsExp));
+            u.setGuidePricing(BigDecimal.valueOf(30 + random.nextInt(121)).setScale(2, RoundingMode.HALF_UP));
             u.setCreatedAt(LocalDateTime.now().minusDays(random.nextInt(365)));
             guides.add(u);
         }

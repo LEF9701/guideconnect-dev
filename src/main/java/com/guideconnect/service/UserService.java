@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -125,23 +126,26 @@ public class UserService implements UserDetailsService {
 
     /**
      * Updates the profile of a guide user, including display name,
-     * biography, and languages spoken.
+     * biography, languages spoken, and profile pricing.
      *
      * @param userId         the ID of the user to update
      * @param displayName    the new display name
      * @param biography      the new biography text
      * @param languagesSpoken the new languages spoken
+     * @param guidePricing    the guide's profile pricing
      * @return the updated User entity
      * @throws IllegalArgumentException if the user is not found
      */
     @Transactional
-    public User updateGuideProfile(Long userId, String displayName, String biography, String languagesSpoken) {
+    public User updateGuideProfile(Long userId, String displayName, String biography,
+                                   String languagesSpoken, BigDecimal guidePricing) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         user.setDisplayName(displayName);
         user.setBiography(biography);
         user.setLanguagesSpoken(languagesSpoken);
+        user.setGuidePricing(guidePricing);
         return userRepository.save(user);
     }
 

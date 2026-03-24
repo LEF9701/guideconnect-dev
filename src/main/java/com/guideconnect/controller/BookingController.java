@@ -3,10 +3,7 @@ package com.guideconnect.controller;
 import com.guideconnect.model.Booking;
 import com.guideconnect.model.TourListing;
 import com.guideconnect.model.User;
-import com.guideconnect.service.BookingService;
-import com.guideconnect.service.TransactionService;
-import com.guideconnect.service.TourService;
-import com.guideconnect.service.UserService;
+import com.guideconnect.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -36,6 +33,9 @@ public class BookingController {
     private final TourService tourService;
     private final UserService userService;
     private final TransactionService transactionService;
+    private final ReviewService reviewService;
+    private final MessageService messageService;
+
 
     /**
      * Constructs a {@code BookingController} with the required service dependencies.
@@ -48,11 +48,14 @@ public class BookingController {
     public BookingController(BookingService bookingService,
                              TourService tourService,
                              UserService userService,
-                             TransactionService transactionService) {
+                             TransactionService transactionService,ReviewService reviewService, MessageService messageService) {
         this.bookingService = bookingService;
         this.tourService = tourService;
         this.userService = userService;
         this.transactionService = transactionService;
+        this.reviewService = reviewService;
+        this.messageService = messageService;
+
     }
 
     /**
@@ -120,8 +123,17 @@ public class BookingController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Booking booking = bookingService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
+        boolean canComplete = booking.getRequestedDate().isBefore(LocalDate.now());
+        boolean hasReviewed = reviewService.hasReviewed(id, user.getId());
+
         model.addAttribute("user", user);
         model.addAttribute("booking", booking);
+        model.addAttribute("canComplete", canComplete);
+        model.addAttribute("hasReviewed", hasReviewed);
+        model.addAttribute("messageCount", messageService.getMessagesForBooking(id).size());
+        model.addAttribute("transaction", transactionService.findByBooking(id).orElse(null));
+
         return "booking/detail";
     }
 
@@ -181,7 +193,9 @@ public class BookingController {
     @PostMapping("/{id}/complete")
     public String completeBooking(@PathVariable Long id,
                                   @AuthenticationPrincipal UserDetails principal) {
-        bookingService.completeBooking(id);
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        bookingService.completeBooking(id, user.getId());
         return "redirect:/bookings/" + id;
     }
 

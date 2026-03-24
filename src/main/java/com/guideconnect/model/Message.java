@@ -38,8 +38,10 @@ public class Message {
     private LocalDateTime timestamp = LocalDateTime.now();
 
     private boolean flagged = false;
+    private boolean read = false;
 
     public Message() {}
+
 
     public Message(User sender, User receiver, Booking booking, String content) {
         this.sender = sender;
@@ -69,4 +71,6 @@ public class Message {
 
     public boolean isFlagged() { return flagged; }
     public void setFlagged(boolean flagged) { this.flagged = flagged; }
+    public boolean isRead() { return read; }
+    public void setRead(boolean read) { this.read = read; }
 }

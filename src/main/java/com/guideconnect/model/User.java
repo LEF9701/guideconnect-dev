@@ -2,6 +2,7 @@ package com.guideconnect.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -47,6 +48,10 @@ public class User {
     private String languagesSpoken;
 
     private String profilePhoto;
+
+    @DecimalMin("0.00")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal guidePricing;
 
     @Column(precision = 3)
     private Double avgRating = 0.0;
@@ -104,6 +109,9 @@ public class User {
 
     public String getProfilePhoto() { return profilePhoto; }
     public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
+
+    public BigDecimal getGuidePricing() { return guidePricing; }
+    public void setGuidePricing(BigDecimal guidePricing) { this.guidePricing = guidePricing; }
 
     public Double getAvgRating() { return avgRating; }
     public void setAvgRating(Double avgRating) { this.avgRating = avgRating; }

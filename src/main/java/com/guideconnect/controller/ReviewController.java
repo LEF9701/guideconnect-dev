@@ -61,9 +61,13 @@ public class ReviewController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Booking booking = bookingService.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
+        boolean guideReviewingTourist = user.getId().equals(booking.getGuide().getId());
+        User reviewee = guideReviewingTourist ? booking.getTourist() : booking.getGuide();
         model.addAttribute("user", user);
         model.addAttribute("booking", booking);
         model.addAttribute("review", new Review());
+        model.addAttribute("revieweeName", reviewee.getDisplayName());
+        model.addAttribute("guideReviewingTourist", guideReviewingTourist);
         return "review/form";
     }
 
@@ -88,8 +92,10 @@ public class ReviewController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Booking booking = bookingService.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
-        // The reviewer is the current user; the reviewee is the guide of the booking
-        reviewService.submitReview(user.getId(), booking.getGuide().getId(), bookingId, starRating, comment);
+        boolean guideReviewingTourist = user.getId().equals(booking.getGuide().getId());
+        Long revieweeId = guideReviewingTourist ? booking.getTourist().getId() : booking.getGuide().getId();
+        String submittedComment = guideReviewingTourist ? null : comment;
+        reviewService.submitReview(user.getId(), revieweeId, bookingId, starRating, submittedComment);
         return "redirect:/bookings/" + bookingId;
     }
 }

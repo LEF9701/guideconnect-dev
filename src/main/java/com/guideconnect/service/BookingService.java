@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Service layer for booking lifecycle management.
@@ -144,14 +145,20 @@ public class BookingService {
      * date is in the past.
      *
      * @param bookingId the ID of the booking to complete
+     * @param userId    the ID of the user marking the booking complete
      * @return the updated Booking entity
      * @throws IllegalArgumentException if the booking is not found
+     * @throws SecurityException        if the user is neither the tourist nor the guide
      * @throws IllegalStateException    if the tour date has not yet passed or the transition is not valid
      */
     @Transactional
-    public Booking completeBooking(Long bookingId) {
+    public Booking completeBooking(Long bookingId, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
+
+        if (!booking.getTourist().getId().equals(userId) && !booking.getGuide().getId().equals(userId)) {
+            throw new SecurityException("Only the tourist or guide can complete this booking");
+        }
 
         if (!booking.getRequestedDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Cannot complete booking before the tour date has passed");
@@ -268,4 +275,10 @@ public class BookingService {
         }
         booking.setStatus(newStatus);
     }
+    public Page<Booking> findByGuideAndStatusIn(Long guideId, List<BookingStatus> statuses, Pageable pageable) {
+        User guide = userRepository.findById(guideId)
+                .orElseThrow(() -> new IllegalArgumentException("Guide not found"));
+        return bookingRepository.findByGuideAndStatusIn(guide, statuses, pageable);
+    }
+
 }

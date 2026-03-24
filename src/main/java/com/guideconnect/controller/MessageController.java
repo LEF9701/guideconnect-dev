@@ -14,6 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.time.LocalDateTime;
+import com.guideconnect.model.Message;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for in-app messaging tied to bookings.
@@ -62,6 +69,7 @@ public class MessageController {
         model.addAttribute("booking", booking);
         model.addAttribute("bookingId", bookingId);
         model.addAttribute("messages", messageService.getMessagesForBooking(bookingId));
+        messageService.markMessagesAsRead(bookingId, user.getId());
         return "booking/messages";
     }
 
@@ -108,5 +116,37 @@ public class MessageController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         messageService.flagMessage(messageId, user.getId());
         return "redirect:/messages/booking/" + bookingId;
+    }
+
+    @GetMapping
+    public String showInbox(@AuthenticationPrincipal UserDetails principal, Model model) {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Booking> bookingsWithMessages = new ArrayList<>(
+                messageService.getBookingsWithMessagesForUser(user.getId()));
+
+        // build unread count map
+        Map<Long, Long> unreadCounts = new HashMap<>();
+        for (Booking booking : bookingsWithMessages) {
+            long count = messageService.getUnreadCountForBooking(booking.getId(), user.getId());
+            unreadCounts.put(booking.getId(), count);
+        }
+
+        // sort — bookings with unread messages first
+        bookingsWithMessages.sort((a, b) -> {
+            List<Message> messagesA = messageService.getMessagesForBooking(a.getId());
+            List<Message> messagesB = messageService.getMessagesForBooking(b.getId());
+
+            LocalDateTime latestA = messagesA.isEmpty() ? LocalDateTime.MIN :
+                    messagesA.get(messagesA.size() - 1).getTimestamp();
+            LocalDateTime latestB = messagesB.isEmpty() ? LocalDateTime.MIN :
+                    messagesB.get(messagesB.size() - 1).getTimestamp();
+
+            return latestB.compareTo(latestA); // newest first
+        });
+        model.addAttribute("user", user);
+        model.addAttribute("bookingsWithMessages", bookingsWithMessages);
+        model.addAttribute("unreadCounts", unreadCounts);
+        return "messages/inbox";
     }
 }

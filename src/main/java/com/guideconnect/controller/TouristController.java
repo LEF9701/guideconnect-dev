@@ -5,6 +5,7 @@ import com.guideconnect.service.BookingService;
 import com.guideconnect.service.ReviewService;
 import com.guideconnect.service.UserService;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -75,6 +76,26 @@ public class TouristController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         model.addAttribute("user", user);
         return "tourist/profile";
+    }
+
+    /**
+     * Displays the tourist's full booking history.
+     *
+     * @param principal the currently authenticated user's security principal
+     * @param model     the Thymeleaf model
+     * @return the tourist bookings view name
+     */
+    @GetMapping("/bookings")
+    public String showBookings(@AuthenticationPrincipal UserDetails principal, Model model) {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        model.addAttribute("user", user);
+        model.addAttribute("bookingHistory", bookingService.findByTourist(
+                user.getId(),
+                PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "requestedDate")
+                        .and(Sort.by(Sort.Direction.DESC, "createdAt")))
+        ));
+        return "tourist/bookings";
     }
 
     /**

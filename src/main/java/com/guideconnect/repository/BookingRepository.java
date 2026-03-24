@@ -54,6 +54,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * @return list of matching bookings
      */
     List<Booking> findByTourAndStatus(TourListing tour, BookingStatus status);
+    Page<Booking> findByGuideAndStatusIn(User guide, List<BookingStatus> statuses, Pageable pageable);
 
     /**
      * Counts the number of bookings with the specified status.

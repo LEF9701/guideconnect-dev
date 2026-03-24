@@ -86,6 +86,31 @@ public class MessageService {
         return messageRepository.findByBookingOrderByTimestampAsc(booking);
     }
 
+    public List<Booking> getBookingsWithMessagesForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        return messageRepository.findDistinctBookingsByUser(user);
+    }
+
+    public long getUnreadCountForBooking(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return messageRepository.countByBookingAndReceiverAndReadFalse(booking, user);
+    }
+
+    @Transactional
+    public void markMessagesAsRead(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Message> unread = messageRepository
+                .findByBookingAndReceiverAndReadFalse(booking, user);
+        unread.forEach(m -> m.setRead(true));
+        messageRepository.saveAll(unread);
+    }
     /**
      * Flags a message for admin review and automatically creates an OPEN dispute.
      * The dispute is linked to both the flagged message and its associated booking.

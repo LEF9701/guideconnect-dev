@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Login - GuideConnect</title>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">Sign In</h3>
+
+                        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                            Invalid email or password. Please try again.
+                        </div>
+                        <div th:if="${param.logout}" class="alert alert-info" role="alert">
+                            You have been logged out successfully.
+                        </div>
+
+                        <form th:action="@{/auth/login}" method="post">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="email" name="username"
+                                       placeholder="you@example.com" required="required"/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="Enter your password" required="required"/>
+                            </div>
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                            </div>
+                        </form>
+
+                        <p class="text-center text-muted mb-0">
+                            Don't have an account?
+                            <a th:href="@{/auth/register}" class="text-decoration-none">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

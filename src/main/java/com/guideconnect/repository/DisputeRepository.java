@@ -28,6 +28,15 @@ public interface DisputeRepository extends JpaRepository<Dispute, Long> {
     Page<Dispute> findByStatus(DisputeStatus status, Pageable pageable);
 
     /**
+     * Finds all disputes whose status is one of the provided values.
+     *
+     * @param statuses the statuses to include
+     * @param pageable pagination and sorting parameters
+     * @return a page of disputes matching any of the provided statuses
+     */
+    Page<Dispute> findByStatusIn(List<DisputeStatus> statuses, Pageable pageable);
+
+    /**
      * Finds all disputes associated with a specific booking.
      *
      * @param booking the booking to look up disputes for
