@@ -1,6 +1,5 @@
 package com.guideconnect.service;
 
-<<<<<<< HEAD
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -12,27 +11,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-=======
->>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 import com.guideconnect.model.BookingStatus;
 import com.guideconnect.model.TourListing;
 import com.guideconnect.model.User;
 import com.guideconnect.repository.BookingRepository;
 import com.guideconnect.repository.TourListingRepository;
 import com.guideconnect.repository.UserRepository;
-<<<<<<< HEAD
-=======
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
->>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 
 /**
  * Service layer for tour listing management.
@@ -110,10 +94,7 @@ public class TourService {
         existing.setLanguages(updatedTour.getLanguages());
         existing.setMaxGroupSize(updatedTour.getMaxGroupSize());
         existing.setCategory(updatedTour.getCategory());
-<<<<<<< HEAD
         existing.setImgPath(updatedTour.getImgPath());
-=======
->>>>>>> 3229964df188615c94251e3acd655976dbec09b2
         return tourListingRepository.save(existing);
     }
 
@@ -141,15 +122,9 @@ public class TourService {
                 || !bookingRepository.findByTourAndStatus(tour, BookingStatus.NEGOTIATING).isEmpty()
                 || !bookingRepository.findByTourAndStatus(tour, BookingStatus.CONFIRMED).isEmpty();
 
-<<<<<<< HEAD
         /*if (hasActiveBookings) {
             throw new IllegalStateException("Cannot delete tour with active bookings");
         }*/
-=======
-        if (hasActiveBookings) {
-            throw new IllegalStateException("Cannot delete tour with active bookings");
-        }
->>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 
         tour.setActive(false);
         tourListingRepository.save(tour);

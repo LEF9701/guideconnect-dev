@@ -1,7 +1,8 @@
 package com.guideconnect.repository;
 
-import com.guideconnect.model.TourListing;
-import com.guideconnect.model.User;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,8 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.util.List;
+import com.guideconnect.model.TourListing;
+import com.guideconnect.model.User;
 
 /**
  * Spring Data JPA repository for {@link TourListing} entities.
@@ -71,10 +72,7 @@ public interface TourListingRepository extends JpaRepository<TourListing, Long> 
      * @return the count of active tour listings
      */
     long countByActiveTrue();
-<<<<<<< HEAD
 
     //new 3 tour as feature
     List<TourListing> findTop3ByOrderByIdDesc();
-=======
->>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 }
