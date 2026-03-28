@@ -1,5 +1,17 @@
 package com.guideconnect.service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.guideconnect.model.AccountStatus;
 import com.guideconnect.model.BookingStatus;
 import com.guideconnect.model.Dispute;
@@ -9,17 +21,6 @@ import com.guideconnect.repository.BookingRepository;
 import com.guideconnect.repository.DisputeRepository;
 import com.guideconnect.repository.TourListingRepository;
 import com.guideconnect.repository.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Service layer for administrative operations and dashboard aggregation.
