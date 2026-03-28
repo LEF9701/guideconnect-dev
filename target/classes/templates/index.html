@@ -18,6 +18,18 @@
         <div class="card bg-white text-dark p-4 mx-auto shadow" style="max-width: 700px;">
             <form th:action="@{/tours/search}" method="get">
                 <div class="row g-3 align-items-end">
+<<<<<<< HEAD
+                    <!-- Increased from col-md-4 to col-md-5 -->
+                    <div class="col-md-5">
+                        <label for="city" class="form-label fw-semibold">City</label>
+                        <input type="text" class="form-control" id="city" name="city" placeholder="Where are you going?""")/>
+                    </div>
+                    
+                    <!-- Date field was removed here -->
+
+                    <!-- Increased from col-md-3 to col-md-5 -->
+                    <div class="col-md-5">
+=======
                     <div class="col-md-4">
                         <label for="city" class="form-label fw-semibold">City</label>
                         <input type="text" class="form-control" id="city" name="city" placeholder="Where are you going?"/>
@@ -27,6 +39,7 @@
                         <input type="date" class="form-control" id="date" name="date"/>
                     </div>
                     <div class="col-md-3">
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
                         <label for="language" class="form-label fw-semibold">Language</label>
                         <select class="form-select" id="language" name="language">
                             <option value="">Any</option>
@@ -42,6 +55,11 @@
                             <option value="Korean">Korean</option>
                         </select>
                     </div>
+<<<<<<< HEAD
+                    
+                    <!-- Kept as col-md-2 (Total: 5 + 5 + 2 = 12) -->
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-search"></i> Search
@@ -53,6 +71,10 @@
     </div>
 </section>
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 <!-- How It Works Section -->
 <section class="py-5 bg-light">
     <div class="container text-center">
@@ -120,7 +142,11 @@
             <p>No featured tours available at the moment. Check back soon!</p>
         </div>
         <div class="text-center mt-4">
+<<<<<<< HEAD
+            <a th:href="@{/tours/search}" class="btn btn-primary btn-lg">Browse All Tours</a>
+=======
             <a th:href="@{/tours}" class="btn btn-primary btn-lg">Browse All Tours</a>
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
         </div>
     </div>
 </section>

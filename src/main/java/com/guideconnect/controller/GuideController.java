@@ -1,5 +1,16 @@
 package com.guideconnect.controller;
 
+<<<<<<< HEAD
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+=======
 import com.guideconnect.model.TourListing;
 import com.guideconnect.model.BookingStatus;
 import java.util.List;
@@ -9,6 +20,7 @@ import com.guideconnect.service.ReviewService;
 import com.guideconnect.service.TourService;
 import com.guideconnect.service.UserService;
 import org.springframework.data.domain.PageRequest;
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -17,7 +29,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+<<<<<<< HEAD
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.guideconnect.model.BookingStatus;
+import com.guideconnect.model.TourListing;
+import com.guideconnect.model.User;
+import com.guideconnect.service.BookingService;
+import com.guideconnect.service.ReviewService;
+import com.guideconnect.service.TourService;
+import com.guideconnect.service.UserService;
+=======
 import org.springframework.data.domain.Sort;
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 
 /**
  * Controller for guide-facing pages.
@@ -135,9 +160,21 @@ public class GuideController {
      * @return a redirect to the guide dashboard
      */
     @PostMapping("/tours")
+<<<<<<< HEAD
+    public String createTour(@AuthenticationPrincipal UserDetails principal, 
+                                TourListing tour, 
+                                @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
+        // Save image and set the imgPath in the tour object
+        saveImageIfPresent(tour, imageFile);
+        
+=======
     public String createTour(@AuthenticationPrincipal UserDetails principal, TourListing tour) {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
         tourService.createTour(tour, user.getId());
         return "redirect:/guide/dashboard";
     }
@@ -167,6 +204,19 @@ public class GuideController {
      */
     @PostMapping("/tours/{id}")
     public String updateTour(@PathVariable Long id,
+<<<<<<< HEAD
+                         @AuthenticationPrincipal UserDetails principal,
+                         TourListing updatedTour,
+                         @RequestParam("imageFile") MultipartFile imageFile) throws IOException {
+        User user = userService.findByEmail(principal.getUsername()).orElseThrow();
+
+        // Handle the image (if no new file is uploaded, it keeps the old imgPath)
+        saveImageIfPresent(updatedTour, imageFile);
+    
+        tourService.updateTour(id, updatedTour, user.getId());
+        return "redirect:/guide/dashboard";
+}
+=======
                              @AuthenticationPrincipal UserDetails principal,
                              TourListing updatedTour) {
         User user = userService.findByEmail(principal.getUsername())
@@ -174,6 +224,7 @@ public class GuideController {
         tourService.updateTour(id, updatedTour, user.getId());
         return "redirect:/guide/dashboard";
     }
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 
     /**
      * Deletes a tour by its ID.
@@ -209,4 +260,26 @@ public class GuideController {
                 PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt"))));
         return "guide/requests";
     }
+<<<<<<< HEAD
+    private void saveImageIfPresent(TourListing tour, MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                String uploadDir = "src/main/resources/static/images/tours/";
+                Path uploadPath = Paths.get(uploadDir);
+
+                if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+                }
+
+                try (var inputStream = file.getInputStream()) {
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+                // Save the relative path so the browser can find it
+                System.out.println("/images/tours/" + fileName);
+                tour.setImgPath("/images/tours/" + fileName);
+                }
+        }
+        }
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 }

@@ -1,10 +1,32 @@
 package com.guideconnect.model;
 
+<<<<<<< HEAD
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+=======
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 /**
  * Tour listing entity for guide-created tours (FR-TM-01, FR-TM-03).
  */
@@ -65,6 +87,11 @@ public class TourListing {
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+<<<<<<< HEAD
+    private String imgPath="/images/testing.png";
+
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
     public TourListing() {}
 
     @PreUpdate
@@ -114,4 +141,15 @@ public class TourListing {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+<<<<<<< HEAD
+
+    public String getImgPath() { 
+        return imgPath; 
+    }
+
+    public void setImgPath(String imgPath) { 
+        this.imgPath = imgPath; 
+    }
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 }

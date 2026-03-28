@@ -71,4 +71,10 @@ public interface TourListingRepository extends JpaRepository<TourListing, Long> 
      * @return the count of active tour listings
      */
     long countByActiveTrue();
+<<<<<<< HEAD
+
+    //new 3 tour as feature
+    List<TourListing> findTop3ByOrderByIdDesc();
+=======
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
 }

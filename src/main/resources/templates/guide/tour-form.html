@@ -31,10 +31,35 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
                         <form th:action="${tour.id != null ? '/guide/tours/' + tour.id : '/guide/tours'}"
+<<<<<<< HEAD
+                            method="post" th:object="${tour}" enctype="multipart/form-data">
+
+                            <input type="hidden" th:field="*{imgPath}" />
+
+                            <h5 class="mb-3 text-muted">Tour Details</h5>
+
+                            <hr class="my-4"/>
+
+                            <h5 class="mb-3 text-muted">Tour Image</h5>
+
+                            <div th:if="${tour.imgPath}" class="mb-2">
+                                <img th:src="${tour.imgPath}" class="img-thumbnail" style="height: 150px;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="imageFile" class="form-label">Upload Cover Photo</label>
+                                        
+                                <input type="file" class="form-control" id="imageFile" name="imageFile" 
+                                    accept="image/png, image/jpeg, image/jpg">
+                                <div class="form-text">Recommended size: 800x600px. Leave empty to keep existing image.</div>
+                            </div>
+
+=======
                               method="post" th:object="${tour}">
 
                             <h5 class="mb-3 text-muted">Tour Details</h5>
 
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
                             <div class="mb-3">
                                 <label for="title" class="form-label">Tour Title</label>
                                 <input type="text" class="form-control" id="title" th:field="*{title}"
@@ -77,7 +102,11 @@
                                     <label for="meetingLocation" class="form-label">Meeting Location</label>
                                     <input type="text" class="form-control" id="meetingLocation"
                                            th:field="*{meetingLocation}"
+<<<<<<< HEAD
+                                           placeholder="e.g., In front of the Cathedral" required="required"/>
+=======
                                            placeholder="e.g., In front of the Cathedral"/>
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
                                 </div>
                             </div>
 
@@ -111,7 +140,11 @@
                                 <label for="languages" class="form-label">Languages Offered</label>
                                 <input type="text" class="form-control" id="languages"
                                        th:field="*{languages}"
+<<<<<<< HEAD
+                                       placeholder="e.g., English, Spanish" required="required"/>
+=======
                                        placeholder="e.g., English, Spanish"/>
+>>>>>>> 3229964df188615c94251e3acd655976dbec09b2
                                 <div class="form-text">Comma-separated list of languages this tour is offered in.</div>
                             </div>
 
