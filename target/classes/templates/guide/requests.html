@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Booking Requests - GuideConnect</title>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Incoming Booking Requests</h2>
+            <a th:href="@{/guide/dashboard}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success" role="alert">
+            <span th:text="${success}">Request updated successfully.</span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}">An error occurred.</span>
+        </div>
+
+        <!-- Pending Requests -->
+        <div th:if="${requests != null and requests.totalElements > 0}">
+            <div class="card shadow-sm border-0 mb-3" th:each="request : ${requests.content}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <h5 class="mb-0 me-2" th:text="${request.tour.title}">City Walking Tour</h5>
+                                <span class="badge"
+                                      th:classappend="${request.status.name() == 'REQUESTED' ? 'bg-warning text-dark' :
+                                                       (request.status.name() == 'CONFIRMED' ? 'bg-success' :
+                                                       (request.status.name() == 'REJECTED' ? 'bg-danger' : 'bg-secondary'))}"
+                                      th:text="${request.status}">REQUESTED</span>
+                            </div>
+
+                            <div class="row text-muted mb-2">
+                                <div class="col-auto">
+                                    <i class="bi bi-person"></i>
+                                    <strong>Tourist:</strong>
+                                    <span th:text="${request.tourist.displayName}">Jane Smith</span>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-calendar"></i>
+                                    <strong>Date:</strong>
+                                    <span th:text="${request.requestedDate}">2026-04-15</span>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-people"></i>
+                                    <strong>Group Size:</strong>
+                                    <span th:text="${request.groupSize}">2</span> people
+                                </div>
+                            </div>
+
+                            <div th:if="${request.message}" class="mb-0">
+                                <strong>Message:</strong>
+                                <p class="mb-0 fst-italic text-muted" th:text="${request.message}">
+                                    We're interested in local food recommendations during the tour.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 d-flex align-items-center justify-content-end"
+                             th:if="${request.status.name() == 'REQUESTED' or request.status.name() == 'NEGOTIATING'}">
+                            <div class="btn-group-vertical w-100" style="max-width: 200px;">
+                                <form th:action="@{/bookings/{id}/accept(id=${request.id})}" method="post">
+                                    <button type="submit" class="btn btn-success w-100 mb-1">
+                                        <i class="bi bi-check-lg"></i> Accept
+                                    </button>
+                                </form>
+                                <form th:action="@{/bookings/{id}/reject(id=${request.id})}" method="post">
+                                    <button type="submit" class="btn btn-danger w-100 mb-1">
+                                        <i class="bi bi-x-lg"></i> Reject
+                                    </button>
+                                </form>
+                                <!-- Only show Negotiate if status is REQUESTED -->
+                                <a th:if="${request.status.name() == 'REQUESTED'}"
+                                   th:href="@{/messages/booking/{id}(id=${request.id})}"
+                                   class="btn btn-outline-warning w-100 mb-1">
+                                    <i class="bi bi-chat-text"></i> Negotiate
+                                </a>
+                                <a th:href="@{/messages/booking/{id}(id=${request.id})}"
+                                   class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-chat-left-text"></i> Messages
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="card shadow-sm border-0" th:if="${requests == null or requests.totalElements == 0}">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-3 text-muted d-block mb-3"></i>
+                <h4 class="text-muted">No Booking Requests</h4>
+                <p class="text-muted">You don't have any pending booking requests at the moment.</p>
+                <a th:href="@{/guide/dashboard}" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

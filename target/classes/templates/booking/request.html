@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Request Booking - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <!-- Progress Stepper -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between position-relative">
+                <div class="text-center" style="z-index: 1;">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px;">1</div>
+                    <div class="small mt-1 fw-bold text-primary">Request</div>
+                </div>
+                <div class="text-center" style="z-index: 1;">
+                    <div class="bg-light text-muted rounded-circle d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px;">2</div>
+                    <div class="small mt-1 text-muted">Negotiate</div>
+                </div>
+                <div class="text-center" style="z-index: 1;">
+                    <div class="bg-light text-muted rounded-circle d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px;">3</div>
+                    <div class="small mt-1 text-muted">Confirm &amp; Pay</div>
+                </div>
+                <div class="text-center" style="z-index: 1;">
+                    <div class="bg-light text-muted rounded-circle d-inline-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px;">4</div>
+                    <div class="small mt-1 text-muted">Done</div>
+                </div>
+                <div class="position-absolute top-50 start-0 end-0" style="height: 2px; background: #dee2e6; z-index: 0; margin-top: -10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4">Request a Booking</h2>
+
+            <!-- Tour Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div style="height: 80px; overflow: hidden;">
+                            <img th:src="@{${tour.imgPath}}" 
+                                class="card-img-top" 
+                                style="height: 80px; object-fit: cover;" 
+                                alt="Tour Image" />
+                        </div>
+                        <div>
+                            <h5 class="mb-1" th:text="${tour.title}">Tour Title</h5>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-person-circle"></i>
+                                <span th:text="${tour.guide.displayName}">Guide Name</span>
+                                <span class="ms-2">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span th:text="${tour.city}">City</span>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Booking Details</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/bookings}" method="post" th:object="${booking}">
+                        <input type="hidden" th:name="tourId" th:value="${tour.id}"/>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="requestedDate" class="form-label">Preferred Date</label>
+                                <input type="date" class="form-control" id="requestedDate"
+                                       th:field="*{requestedDate}" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="requestedTime" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="requestedTime"
+                                       th:field="*{requestedTime}" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="groupSize" class="form-label">Group Size</label>
+                                <select class="form-select" id="groupSize" th:field="*{groupSize}"
+                                        onchange="calculateCost()" required>
+                                    <option th:each="i : ${#numbers.sequence(1, tour.maxGroupSize)}"
+                                            th:value="${i}" th:text="${i} + (${i == 1} ? ' person' : ' people')">1</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="languagePref" class="form-label">Language Preference</label>
+                                <select class="form-select" id="languagePref" name="languagePreference">
+                                    <option th:each="lang : ${#strings.arraySplit(tour.languages, ',')}"
+                                            th:value="${#strings.trim(lang)}"
+                                            th:text="${#strings.trim(lang)}">English</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Message to Guide (Optional)</label>
+                                <textarea class="form-control" id="message" th:field="*{message}"
+                                          rows="3" placeholder="Any special requests or questions for your guide..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Cost Summary -->
+                        <div class="border rounded p-3 mt-4 bg-light">
+                            <h5>Cost Summary</h5>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Tour price (<span id="costGroupSize">1</span> x
+                                    <span th:text="'$' + ${#numbers.formatDecimal(tour.pricePerPerson, 1, 2)}">$50.00</span>)</span>
+                                <span id="tourSubtotal"
+                                      th:text="'$' + ${#numbers.formatDecimal(tour.pricePerPerson, 1, 2)}">$50.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1 text-muted">
+                                <span>Platform fee (10%)</span>
+                                <span id="platformFee">$5.00</span>
+                            </div>
+                            <hr/>
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total</span>
+                                <span id="totalCost" class="text-primary">$55.00</span>
+                            </div>
+                        </div>
+
+                        <button t   ype="submit" class="btn btn-primary btn-lg w-100 mt-4">
+                            <i class="bi bi-send"></i> Send Booking Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+
+<script th:inline="javascript">
+    const pricePerPerson = [[${tour.pricePerPerson}]];
+
+    function calculateCost() {
+        const groupSize = parseInt(document.getElementById('groupSize').value);
+        const subtotal = pricePerPerson * groupSize;
+        const fee = subtotal * 0.10;
+        const total = subtotal + fee;
+
+        document.getElementById('costGroupSize').textContent = groupSize;
+        document.getElementById('tourSubtotal').textContent = '$' + subtotal.toFixed(2);
+        document.getElementById('platformFee').textContent = '$' + fee.toFixed(2);
+        document.getElementById('totalCost').textContent = '$' + total.toFixed(2);
+    }
+
+    document.addEventListener('DOMContentLoaded', calculateCost);
+</script>
+</body>
+</html>

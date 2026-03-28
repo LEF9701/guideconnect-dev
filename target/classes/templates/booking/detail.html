@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Booking Detail - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Booking Header -->
+            <div class="d-flex align-items-center mb-4">
+                <h2 class="mb-0 me-3">Booking #<span th:text="${booking.id}">123</span></h2>
+                <span class="badge fs-6"
+                      th:classappend="${booking.status.name() == 'CONFIRMED' ? 'bg-success' :
+                                        booking.status.name() == 'NEGOTIATING' ? 'bg-warning text-dark' :
+                                        booking.status.name() == 'REQUESTED' ? 'bg-info' :
+                                        booking.status.name() == 'COMPLETED' ? 'bg-secondary' :
+                                        booking.status.name() == 'CANCELLED' ? 'bg-danger' :
+                                        booking.status.name() == 'REJECTED' ? 'bg-danger' : 'bg-secondary'}"
+                      th:text="${booking.status}">CONFIRMED</span>
+            </div>
+
+            <!-- Tour Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tour Information</h5>
+                </div>
+                <div class="card-body">
+                    <h5 th:text="${booking.tour.title}">Tour Title</h5>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt"></i> <span th:text="${booking.tour.city}">City</span>
+                    </p>
+                    <p class="text-muted" th:text="${#strings.abbreviate(booking.tour.description, 200)}">
+                        Tour description...
+                    </p>
+                </div>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Booking Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-calendar3 text-primary me-2"></i>
+                                <strong>Date:</strong>
+                                <span th:text="${#temporals.format(booking.requestedDate, 'EEEE, MMM dd, yyyy')}">Monday, Jan 01, 2026</span>
+                            </p>
+                            <p class="mb-2" th:if="${booking.requestedTime}">
+                                <i class="bi bi-clock text-primary me-2"></i>
+                                <strong>Time:</strong>
+                                <span th:text="${#temporals.format(booking.requestedTime, 'hh:mm a')}">09:00 AM</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-people text-primary me-2"></i>
+                                <strong>Group Size:</strong>
+                                <span th:text="${booking.groupSize}">2</span> people
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                <strong>Total Price:</strong>
+                                <span class="fw-bold text-primary"
+                                      th:text="'$' + ${#numbers.formatDecimal(booking.totalPrice, 1, 2)}">$110.00</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div th:if="${booking.message}" class="mt-3">
+                        <strong>Message:</strong>
+                        <p class="text-muted" th:text="${booking.message}">Booking message</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Guide actions: REQUESTED status -->
+                    <div th:if="${booking.status.name() == 'REQUESTED'}" sec:authorize="hasRole('GUIDE')">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form th:action="@{/bookings/{id}/accept(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-lg"></i> Accept
+                                </button>
+                            </form>
+                            <form th:action="@{/bookings/{id}/reject(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-x-lg"></i> Reject
+                                </button>
+                            </form>
+                            <form th:action="@{/bookings/{id}/negotiate(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-chat-dots"></i> Negotiate
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tourist actions: CONFIRMED status -->
+                    <div th:if="${booking.status.name() == 'CONFIRMED'}" sec:authorize="hasRole('TOURIST')">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form th:if="${transaction == null}" th:action="@{/bookings/{id}/pay(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-credit-card"></i> Pay Now
+                                </button>
+                            </form>
+                            <a th:if="${transaction != null}" th:href="@{/bookings/{id}/payment(id=${booking.id})}" class="btn btn-success">
+                                <i class="bi bi-receipt"></i> View Payment
+                            </a>
+                            <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> Cancel Booking
+                                </button>
+                            </form>
+                            <form th:if="${canComplete}" th:action="@{/bookings/{id}/complete(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Mark as Completed
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Guide actions: CONFIRMED status -->
+                    <div th:if="${booking.status.name() == 'CONFIRMED'}" sec:authorize="hasRole('GUIDE')">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form th:if="${canComplete}" th:action="@{/bookings/{id}/complete(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Mark as Completed
+                                </button>
+                            </form>
+                            <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> Cancel Booking
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <p class="text-muted mt-3 mb-0"
+                       th:if="${booking.status.name() == 'CONFIRMED' and !canComplete}"
+                       sec:authorize="hasAnyRole('GUIDE','TOURIST')">
+                        This booking can be marked completed after the scheduled date has passed.
+                    </p>
+
+                    <!-- Leave Review: COMPLETED + not yet reviewed -->
+                    <div th:if="${booking.status.name() == 'COMPLETED' and !hasReviewed}">
+                        <a th:href="@{/reviews/new(bookingId=${booking.id})}" class="btn btn-outline-primary">
+                            <i class="bi bi-star"></i> Leave a Review
+                        </a>
+                    </div>
+
+                    <!-- Messages Link -->
+                    <div class="mt-3">
+                        <a th:href="@{/messages/booking/{id}(id=${booking.id})}" class="btn btn-outline-secondary">
+                            <i class="bi bi-chat-left-text"></i> View Messages
+                            <span class="badge bg-secondary ms-1" th:if="${messageCount > 0}"
+                                  th:text="${messageCount}">0</span>
+                        </a>
+                    </div>
+
+                    <!-- No actions available -->
+                    <div th:if="${booking.status.name() == 'CANCELLED' or booking.status.name() == 'REJECTED'}">
+                        <p class="text-muted mb-0">No actions available for this booking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Info -->
+            <div class="card shadow-sm mb-4" th:if="${transaction != null}">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Transaction Ref:</strong>
+                                <span th:text="${transaction.transactionRef}">TXN-123456</span>
+                            </p>
+                            <p class="mb-2"><strong>Status:</strong>
+                                <span class="badge bg-success" th:text="${transaction.status}">COMPLETED</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Total Amount:</strong>
+                                <span th:text="'$' + ${#numbers.formatDecimal(transaction.totalAmount, 1, 2)}">$110.00</span>
+                            </p>
+                            <p class="mb-2"><strong>Payment Date:</strong>
+                                <span th:text="${#temporals.format(transaction.paymentTimestamp, 'MMM dd, yyyy HH:mm')}">Jan 01, 2026</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Participant Info -->
+        <div class="col-lg-4">
+            <!-- Guide Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Guide</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                         style="width: 60px; height: 60px;">
+                        <i class="bi bi-person-fill" style="font-size: 2rem;"></i>
+                    </div>
+                    <h6 th:text="${booking.guide.displayName}">Guide Name</h6>
+                    <div class="text-warning small" th:if="${booking.guide.avgRating > 0}">
+                        <i class="bi bi-star-fill"></i>
+                        <span th:text="${#numbers.formatDecimal(booking.guide.avgRating, 1, 1)}">4.5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tourist Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tourist</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                         style="width: 60px; height: 60px;">
+                        <i class="bi bi-person-fill" style="font-size: 2rem;"></i>
+                    </div>
+                    <h6 th:text="${booking.tourist.displayName}">Tourist Name</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

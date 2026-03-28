@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Tour Detail - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Tour Header -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <h1 class="mb-0" th:text="${tour.title}">Tour Title</h1>
+                    <span class="badge bg-secondary ms-3" th:if="${tour.category}"
+                          th:text="${tour.category}">Category</span>
+                </div>
+                <p class="text-muted">
+                    <i class="bi bi-geo-alt"></i> <span th:text="${tour.city}">City</span>
+                </p>
+            </div>
+
+            <!-- Image Placeholder -->
+            <div style="height: 200px; overflow: hidden;">
+                <img th:src="@{${tour.imgPath}}" 
+                    class="card-img-top" 
+                    style="height: 200px; object-fit: cover;" 
+                    alt="Tour Image" />
+            </div>
+
+            <!-- About This Tour -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">About This Tour</h4>
+                </div>
+                <div class="card-body">
+                    <p th:text="${tour.description}">Tour description goes here.</p>
+                </div>
+            </div>
+
+            <!-- Tour Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Tour Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                                <strong>Meeting Point:</strong>
+                                <span th:text="${tour.meetingLocation}">Meeting Location</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-clock-fill text-primary me-2"></i>
+                                <strong>Duration:</strong>
+                                <span th:text="${tour.durationHours} + ' hours'">3 hours</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-people-fill text-primary me-2"></i>
+                                <strong>Max Group Size:</strong>
+                                <span th:text="${tour.maxGroupSize}">10</span> people
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2">
+                                <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                <strong>Price:</strong>
+                                <span th:text="'$' + ${#numbers.formatDecimal(tour.pricePerPerson, 1, 2)}">$50.00</span>
+                                /person
+                            </p>
+                            <p class="mb-2">
+                                <i class="bi bi-translate text-primary me-2"></i>
+                                <strong>Languages:</strong>
+                            </p>
+                            <div>
+                                <span class="badge bg-info me-1"
+                                      th:each="lang : ${#strings.arraySplit(tour.languages, ',')}"
+                                      th:text="${#strings.trim(lang)}">English</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Reviews</h4>
+                    <span class="badge bg-primary" th:if="${reviews != null}"
+                          th:text="${reviews.totalElements} + ' reviews'">0 reviews</span>
+                </div>
+                <div class="card-body">
+                    <div th:if="${reviews == null or reviews.totalElements == 0}" class="text-center py-3">
+                        <p class="text-muted">No reviews yet for this tour.</p>
+                    </div>
+
+                    <div th:each="review, iterStat : ${reviews != null ? reviews.content : {}}"
+                         th:classappend="${!iterStat.last ? 'border-bottom pb-3 mb-3' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong th:text="${review.reviewer.displayName}">Reviewer Name</strong>
+                                <div class="text-warning">
+                                    <i th:each="i : ${#numbers.sequence(1, 5)}"
+                                       th:class="${i <= review.starRating ? 'bi bi-star-fill' : 'bi bi-star'}"></i>
+                                </div>
+                            </div>
+                            <small class="text-muted"
+                                   th:text="${#temporals.format(review.createdAt, 'MMM dd, yyyy')}">Jan 01, 2026</small>
+                        </div>
+                        <p class="mt-2 mb-0" th:text="${review.comment}">Review comment text.</p>
+                    </div>
+                </div>
+
+                <!-- Reviews Pagination -->
+                <div class="card-footer bg-white" th:if="${reviews != null and reviews.totalPages > 1}">
+                    <nav aria-label="Reviews pages">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item" th:each="pageNum : ${#numbers.sequence(0, reviews.totalPages - 1)}"
+                                th:classappend="${pageNum == reviews.number ? 'active' : ''}">
+                                <a class="page-link"
+                                   th:href="@{/tours/{id}(id=${tour.id}, reviewPage=${pageNum})}"
+                                   th:text="${pageNum + 1}">1</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Guide Info Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Your Guide</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 80px; height: 80px;">
+                        <i class="bi bi-person-fill" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 th:text="${tour.guide.displayName}">Guide Name</h5>
+                    <div class="text-warning mb-1" th:if="${tour.guide.avgRating > 0}">
+                        <i th:each="i : ${#numbers.sequence(1, 5)}"
+                           th:class="${i <= tour.guide.avgRating ? 'bi bi-star-fill' : 'bi bi-star'}"></i>
+                        <span class="text-muted ms-1"
+                              th:text="${#numbers.formatDecimal(tour.guide.avgRating, 1, 1)}">4.5</span>
+                    </div>
+                    <p class="text-muted small"
+                       th:text="${tour.guide.reviewCount} + ' reviews'">0 reviews</p>
+                    <div th:if="${tour.guide.languagesSpoken}">
+                        <small class="text-muted">Speaks: </small>
+                        <span class="badge bg-outline-secondary border me-1"
+                              th:each="lang : ${#strings.arraySplit(tour.guide.languagesSpoken, ',')}"
+                              th:text="${#strings.trim(lang)}">English</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Card -->
+            <div class="card shadow-sm sticky-top" style="top: 1rem;" sec:authorize="!hasRole('GUIDE')">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Book This Tour</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="groupSizeSelect" class="form-label">Group Size</label>
+                        <select class="form-select" id="groupSizeSelect" onchange="updateTotalPrice()">
+                            <option th:each="i : ${#numbers.sequence(1, tour.maxGroupSize)}"
+                                    th:value="${i}" th:text="${i} + (${i == 1} ? ' person' : ' people')">1 person</option>
+                        </select>
+                    </div>
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Price per person</span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(tour.pricePerPerson, 1, 2)}">$50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+                            <span>Total</span>
+                            <span id="totalPrice"
+                                  th:text="'$' + ${#numbers.formatDecimal(tour.pricePerPerson, 1, 2)}">$50.00</span>
+                        </div>
+                    </div>
+                    <a th:href="@{/bookings/new(tourId=${tour.id})}"
+                       class="btn btn-primary w-100 mt-3" sec:authorize="isAuthenticated()">
+                        <i class="bi bi-calendar-check"></i> Request to Book
+                    </a>
+                    <a th:href="@{/auth/login}" class="btn btn-outline-primary w-100 mt-3"
+                       sec:authorize="isAnonymous()">
+                        Login to Book
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+
+<script th:inline="javascript">
+    const pricePerPerson = [[${tour.pricePerPerson}]];
+    function updateTotalPrice() {
+        const groupSize = document.getElementById('groupSizeSelect').value;
+        const total = (pricePerPerson * groupSize).toFixed(2);
+        document.getElementById('totalPrice').textContent = '$' + total;
+    }
+</script>
+</body>
+</html>

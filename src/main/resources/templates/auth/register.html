@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Register - GuideConnect</title>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center mb-4">Create Your Account</h3>
+
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <span th:text="${error}">An error occurred.</span>
+                        </div>
+
+                        <form th:action="@{/auth/register}" method="post" th:object="${user}">
+
+                            <!-- Role Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">I want to join as:</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" th:field="*{role}"
+                                               id="roleTourist" value="TOURIST"/>
+                                        <label class="form-check-label" for="roleTourist">
+                                            <i class="bi bi-person"></i> Tourist
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" th:field="*{role}"
+                                               id="roleGuide" value="GUIDE"/>
+                                        <label class="form-check-label" for="roleGuide">
+                                            <i class="bi bi-compass"></i> Local Guide
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="displayName" class="form-label">Display Name</label>
+                                <input type="text" class="form-control" id="displayName" th:field="*{displayName}"
+                                       placeholder="Your display name" required="required"/>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}"
+                                       placeholder="you@example.com" required="required"/>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" th:field="*{password}"
+                                       placeholder="Create a password" required="required"/>
+                            </div>
+
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">Sign Up</button>
+                            </div>
+                        </form>
+
+                        <p class="text-center text-muted mb-0">
+                            Already have an account?
+                            <a th:href="@{/auth/login}" class="text-decoration-none">Login</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>
