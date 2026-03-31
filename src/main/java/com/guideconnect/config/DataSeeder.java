@@ -524,22 +524,13 @@ public class DataSeeder implements CommandLineRunner {
         for (int d = 0; d < disputeBookings.size(); d++) {
             Booking booking = disputeBookings.get(d);
             boolean guideFlags = random.nextBoolean();
-            User sender = guideFlags ? booking.getGuide() : booking.getTourist();
-            User receiver = guideFlags ? booking.getTourist() : booking.getGuide();
             User reporter = guideFlags ? booking.getTourist() : booking.getGuide();
-
-            Message flaggedMsg = new Message(sender, receiver, booking, flaggedContents[d]);
-            flaggedMsg.setFlagged(true);
-            flaggedMsg.setTimestamp(booking.getCreatedAt().plusHours(2));
-            messages.add(flaggedMsg);
-
-            // Need to save flagged message first to get its ID
-            Message savedMsg = messageRepository.save(flaggedMsg);
+            User reportedUser = guideFlags ? booking.getGuide() : booking.getTourist();
 
             Dispute dispute = new Dispute();
             dispute.setBooking(booking);
-            dispute.setFlaggedMessage(savedMsg);
             dispute.setReporter(reporter);
+            dispute.setReportedUser(reportedUser);
             dispute.setDescription("Flagged message reported for policy violation: " + flaggedContents[d]);
             dispute.setStatus(d < 2 ? DisputeStatus.OPEN : (d < 4 ? DisputeStatus.UNDER_REVIEW : DisputeStatus.RESOLVED));
             if (dispute.getStatus() == DisputeStatus.RESOLVED) {

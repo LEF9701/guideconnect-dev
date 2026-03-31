@@ -7,10 +7,13 @@
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/BookingController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/CustomErrorController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/GuideController.java
+/Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/GuideProfileController.java
+/Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/IndexController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/MessageController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/ReviewController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/TourController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/TouristController.java
+/Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/controller/TouristProfileController.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/model/AccountStatus.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/model/Booking.java
 /Users/gaurabgurung/Downloads/guideconnect-dev/src/main/java/com/guideconnect/model/BookingStatus.java

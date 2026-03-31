@@ -83,7 +83,7 @@ public class MessageService {
     public List<Message> getMessagesForBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
-        return messageRepository.findByBookingOrderByTimestampAsc(booking);
+        return messageRepository.findByBookingAndFlaggedFalseOrderByTimestampAsc(booking);
     }
 
     public List<Booking> getBookingsWithMessagesForUser(Long userId) {
@@ -127,6 +127,10 @@ public class MessageService {
 
         User reporter = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        if (message.isFlagged()) {
+            return message;
+        }
 
         message.setFlagged(true);
         messageRepository.save(message);

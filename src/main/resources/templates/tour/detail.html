@@ -152,12 +152,21 @@
                     </div>
                     <p class="text-muted small"
                        th:text="${tour.guide.reviewCount} + ' reviews'">0 reviews</p>
-                    <div th:if="${tour.guide.languagesSpoken}">
-                        <small class="text-muted">Speaks: </small>
-                        <span class="badge bg-outline-secondary border me-1"
-                              th:each="lang : ${#strings.arraySplit(tour.guide.languagesSpoken, ',')}"
-                              th:text="${#strings.trim(lang)}">English</span>
+                    <p class="small mb-2"
+                       th:text="${tour.guide.biography != null and !#strings.isEmpty(tour.guide.biography) ? #strings.abbreviate(tour.guide.biography, 120) : 'No biography added yet.'}">
+                        Guide bio
+                    </p>
+                    <div th:if="${tour.guide.languagesSpoken}" class="mt-3">
+                        <small class="text-muted d-block mb-2">Speaks:</small>
+                        <div class="guide-language-chips justify-content-center">
+                            <span class="guide-language-chip"
+                                  th:each="lang : ${#strings.arraySplit(tour.guide.languagesSpoken, ',')}"
+                                  th:text="${#strings.trim(lang)}">English</span>
+                        </div>
                     </div>
+                    <a th:href="@{/guides/{id}(id=${tour.guide.id})}" class="btn btn-outline-primary btn-sm mt-3">
+                        View Full Profile
+                    </a>
                 </div>
             </div>
 

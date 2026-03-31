@@ -35,6 +35,7 @@ public class BookingController {
     private final TransactionService transactionService;
     private final ReviewService reviewService;
     private final MessageService messageService;
+    private final AdminService adminService;
 
 
     /**
@@ -48,13 +49,15 @@ public class BookingController {
     public BookingController(BookingService bookingService,
                              TourService tourService,
                              UserService userService,
-                             TransactionService transactionService,ReviewService reviewService, MessageService messageService) {
+                             TransactionService transactionService,ReviewService reviewService, MessageService messageService,
+                             AdminService adminService) {
         this.bookingService = bookingService;
         this.tourService = tourService;
         this.userService = userService;
         this.transactionService = transactionService;
         this.reviewService = reviewService;
         this.messageService = messageService;
+        this.adminService = adminService;
 
     }
 
@@ -118,6 +121,7 @@ public class BookingController {
     @GetMapping("/{id}")
     public String showBookingDetail(@PathVariable Long id,
                                     @AuthenticationPrincipal UserDetails principal,
+                                    @RequestParam(value = "reported", required = false) String reported,
                                     Model model) {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -133,6 +137,7 @@ public class BookingController {
         model.addAttribute("hasReviewed", hasReviewed);
         model.addAttribute("messageCount", messageService.getMessagesForBooking(id).size());
         model.addAttribute("transaction", transactionService.findByBooking(id).orElse(null));
+        model.addAttribute("reported", reported != null);
 
         return "booking/detail";
     }
@@ -252,5 +257,22 @@ public class BookingController {
         model.addAttribute("booking", booking);
         model.addAttribute("transaction", transactionService.findByBooking(id).orElse(null));
         return "booking/payment-confirmation";
+    }
+
+    @PostMapping("/{id}/report")
+    public String reportUser(@PathVariable Long id,
+                             @AuthenticationPrincipal UserDetails principal,
+                             @RequestParam String description) {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Booking booking = bookingService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
+        Long reportedUserId = user.getId().equals(booking.getTourist().getId())
+                ? booking.getGuide().getId()
+                : booking.getTourist().getId();
+
+        adminService.createDirectDispute(user.getId(), reportedUserId, id, description);
+        return "redirect:/bookings/" + id + "?reported=true";
     }
 }

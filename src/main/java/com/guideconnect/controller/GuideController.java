@@ -26,6 +26,7 @@ import com.guideconnect.model.User;
 import com.guideconnect.service.BookingService;
 import com.guideconnect.service.ReviewService;
 import com.guideconnect.service.TourService;
+import com.guideconnect.service.TransactionService;
 import com.guideconnect.service.UserService;
 
 /**
@@ -43,6 +44,7 @@ public class GuideController {
     private final TourService tourService;
     private final BookingService bookingService;
     private final ReviewService reviewService;
+    private final TransactionService transactionService;
 
     /**
      * Constructs a {@code GuideController} with the required service dependencies.
@@ -54,11 +56,13 @@ public class GuideController {
     public GuideController(UserService userService,
                            TourService tourService,
                            BookingService bookingService,
-                           ReviewService reviewService) {
+                           ReviewService reviewService,
+                           TransactionService transactionService) {
         this.userService = userService;
         this.tourService = tourService;
         this.bookingService = bookingService;
         this.reviewService = reviewService;
+        this.transactionService = transactionService;
     }
 
     /**
@@ -87,7 +91,20 @@ public class GuideController {
         model.addAttribute("reviews", reviewService.getReviewsForUser(
                 user.getId(),
                 PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))));
+        model.addAttribute("netEarnings", transactionService.getGuideNetEarnings(user));
         return "guide/dashboard";
+    }
+
+    @GetMapping("/earnings")
+    public String showEarnings(@AuthenticationPrincipal UserDetails principal, Model model) {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        model.addAttribute("user", user);
+        model.addAttribute("grossRevenue", transactionService.getGuideGrossRevenue(user));
+        model.addAttribute("platformCommission", transactionService.getGuideCommission(user));
+        model.addAttribute("netEarnings", transactionService.getGuideNetEarnings(user));
+        model.addAttribute("transactions", transactionService.getGuideTransactions(user, 20));
+        return "guide/earnings";
     }
 
     /**

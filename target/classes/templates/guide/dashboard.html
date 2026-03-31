@@ -50,6 +50,17 @@
             <div class="col-md-3">
                 <div class="card text-center shadow-sm border-0">
                     <div class="card-body">
+                        <a th:href="@{/guide/earnings}" class="text-decoration-none">
+                            <div class="display-6 text-success fw-bold"
+                                 th:text="'$' + ${#numbers.formatDecimal(netEarnings != null ? netEarnings : 0, 1, 2)}">$0.00</div>
+                            <p class="text-muted mb-0">Net Earnings ↗</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm border-0">
+                    <div class="card-body">
                         <div class="display-6 text-info fw-bold">
                             <i class="bi bi-star-fill text-warning"></i>
                             <span th:text="${user.avgRating != null ? #numbers.formatDecimal(user.avgRating, 1, 1) : 'N/A'}">4.8</span>

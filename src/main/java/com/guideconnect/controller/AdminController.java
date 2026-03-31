@@ -137,6 +137,20 @@ public class AdminController {
         return "admin/disputes";
     }
 
+    @GetMapping("/disputes/{id}")
+    public String showDispute(@PathVariable Long id, Model model) {
+        model.addAttribute("dispute", adminService.getDisputeById(id));
+        return "admin/dispute-detail";
+    }
+
+    @GetMapping("/reports")
+    public String reports(Model model) {
+        model.addAllAttributes(adminService.getReportMetrics());
+        model.addAttribute("recentUsers", adminService.getRecentRegistrations(10));
+        model.addAttribute("openDisputes", adminService.getActiveDisputes(10));
+        return "admin/reports";
+    }
+
     /**
      * Resolves a dispute with a resolution text provided by the admin.
      *

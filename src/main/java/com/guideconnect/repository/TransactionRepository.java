@@ -2,7 +2,10 @@ package com.guideconnect.repository;
 
 import com.guideconnect.model.Booking;
 import com.guideconnect.model.Transaction;
+import com.guideconnect.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -42,4 +45,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      */
     @Query("SELECT SUM(t.commissionAmount) FROM Transaction t")
     BigDecimal sumCommissionAmount();
+
+    @Query("SELECT SUM(t.totalAmount) FROM Transaction t WHERE t.booking.guide = :guide")
+    BigDecimal sumTotalAmountByGuide(User guide);
+
+    @Query("SELECT SUM(t.commissionAmount) FROM Transaction t WHERE t.booking.guide = :guide")
+    BigDecimal sumCommissionAmountByGuide(User guide);
+
+    Page<Transaction> findByBooking_GuideOrderByPaymentTimestampDesc(User guide, Pageable pageable);
 }

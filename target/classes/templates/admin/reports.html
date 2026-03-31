@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Admin Reports - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <h2 class="mb-4">Platform Reports</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted small mb-1">Tourists</p>
+                    <h3 class="mb-0" th:text="${totalTourists}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted small mb-1">Guides</p>
+                    <h3 class="mb-0" th:text="${totalGuides}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted small mb-1">Active Disputes</p>
+                    <h3 class="mb-0" th:text="${activeDisputeCount}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <p class="text-muted small mb-1">Resolved Disputes</p>
+                    <h3 class="mb-0" th:text="${resolvedDisputeCount}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Revenue Snapshot</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-2"><strong>Total Revenue:</strong> <span th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 2)}">$0.00</span></p>
+            <p class="mb-0"><strong>Total Commission:</strong> <span th:text="'$' + ${#numbers.formatDecimal(totalCommission, 1, 2)}">$0.00</span></p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Registrations</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${recentUsers == null or #lists.isEmpty(recentUsers)}" class="text-muted">No recent users.</div>
+                    <ul class="list-group list-group-flush" th:if="${recentUsers != null and !#lists.isEmpty(recentUsers)}">
+                        <li class="list-group-item px-0" th:each="user : ${recentUsers}">
+                            <strong th:text="${user.displayName}">User</strong>
+                            <span class="text-muted"> - </span>
+                            <span th:text="${user.role}">TOURIST</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Active Disputes</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${openDisputes == null or #lists.isEmpty(openDisputes)}" class="text-muted">No open disputes.</div>
+                    <ul class="list-group list-group-flush" th:if="${openDisputes != null and !#lists.isEmpty(openDisputes)}">
+                        <li class="list-group-item px-0" th:each="dispute : ${openDisputes}">
+                            <a th:href="@{/admin/disputes/{id}(id=${dispute.id})}" th:text="'Dispute #' + ${dispute.id}">Dispute #1</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

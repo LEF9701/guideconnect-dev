@@ -26,6 +26,10 @@ public class Dispute {
     @JoinColumn(name = "reporter_id", nullable = false)
     private User reporter;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_user_id")
+    private User reportedUser;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -55,6 +59,9 @@ public class Dispute {
 
     public User getReporter() { return reporter; }
     public void setReporter(User reporter) { this.reporter = reporter; }
+
+    public User getReportedUser() { return reportedUser; }
+    public void setReportedUser(User reportedUser) { this.reportedUser = reportedUser; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

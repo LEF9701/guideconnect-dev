@@ -60,6 +60,7 @@ public class MessageController {
     @GetMapping("/booking/{bookingId}")
     public String showMessages(@PathVariable Long bookingId,
                                @AuthenticationPrincipal UserDetails principal,
+                               @RequestParam(value = "reported", required = false) String reported,
                                Model model) {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -69,6 +70,7 @@ public class MessageController {
         model.addAttribute("booking", booking);
         model.addAttribute("bookingId", bookingId);
         model.addAttribute("messages", messageService.getMessagesForBooking(bookingId));
+        model.addAttribute("reported", reported != null);
         messageService.markMessagesAsRead(bookingId, user.getId());
         return "booking/messages";
     }
@@ -115,7 +117,7 @@ public class MessageController {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         messageService.flagMessage(messageId, user.getId());
-        return "redirect:/messages/booking/" + bookingId;
+        return "redirect:/messages/booking/" + bookingId + "?reported=true";
     }
 
     @GetMapping

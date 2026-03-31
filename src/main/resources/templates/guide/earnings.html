@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Guide Earnings - GuideConnect</title>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Earnings Overview</h2>
+                <p class="text-muted mb-0">Track your paid bookings and estimated take-home earnings.</p>
+            </div>
+            <a th:href="@{/guide/dashboard}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-2">Gross Revenue</p>
+                        <div class="display-6 fw-bold text-primary"
+                             th:text="'$' + ${#numbers.formatDecimal(grossRevenue != null ? grossRevenue : 0, 1, 2)}">$0.00</div>
+                        <small class="text-muted">Total value of paid bookings for this guide.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-2">Platform Commission</p>
+                        <div class="display-6 fw-bold text-warning"
+                             th:text="'$' + ${#numbers.formatDecimal(platformCommission != null ? platformCommission : 0, 1, 2)}">$0.00</div>
+                        <small class="text-muted">10% platform fee deducted from paid bookings.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <p class="text-muted mb-2">Net Earnings</p>
+                        <div class="display-6 fw-bold text-success"
+                             th:text="'$' + ${#numbers.formatDecimal(netEarnings != null ? netEarnings : 0, 1, 2)}">$0.00</div>
+                        <small class="text-muted">Gross revenue after commission deductions.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Recent Paid Bookings</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" th:if="${transactions != null and transactions.totalElements > 0}">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Booking</th>
+                            <th>Tour</th>
+                            <th>Tourist</th>
+                            <th>Paid On</th>
+                            <th>Gross</th>
+                            <th>Commission</th>
+                            <th>Net</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="transaction : ${transactions.content}">
+                            <td>
+                                <a th:href="@{/bookings/{id}(id=${transaction.booking.id})}"
+                                   th:text="'#' + ${transaction.booking.id}"
+                                   class="text-decoration-none">#1</a>
+                            </td>
+                            <td th:text="${transaction.booking.tour.title}">Tour Title</td>
+                            <td th:text="${transaction.booking.tourist.displayName}">Tourist Name</td>
+                            <td th:text="${#temporals.format(transaction.paymentTimestamp, 'MMM dd, yyyy hh:mm a')}">Mar 30, 2026 10:00 AM</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(transaction.totalAmount, 1, 2)}">$0.00</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(transaction.commissionAmount, 1, 2)}">$0.00</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(transaction.totalAmount - transaction.commissionAmount, 1, 2)}">$0.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center text-muted py-5" th:if="${transactions == null or transactions.totalElements == 0}">
+                    <i class="bi bi-wallet2 display-4 d-block mb-2"></i>
+                    <p class="mb-0">No paid bookings yet, so earnings are currently $0.00.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>

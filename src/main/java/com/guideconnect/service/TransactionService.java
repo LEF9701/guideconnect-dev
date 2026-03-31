@@ -2,8 +2,12 @@ package com.guideconnect.service;
 
 import com.guideconnect.model.Booking;
 import com.guideconnect.model.Transaction;
+import com.guideconnect.model.User;
 import com.guideconnect.repository.BookingRepository;
 import com.guideconnect.repository.TransactionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,5 +102,25 @@ public class TransactionService {
     public BigDecimal getTotalCommission() {
         BigDecimal total = transactionRepository.sumCommissionAmount();
         return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getGuideGrossRevenue(User guide) {
+        BigDecimal total = transactionRepository.sumTotalAmountByGuide(guide);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getGuideCommission(User guide) {
+        BigDecimal total = transactionRepository.sumCommissionAmountByGuide(guide);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getGuideNetEarnings(User guide) {
+        return getGuideGrossRevenue(guide).subtract(getGuideCommission(guide));
+    }
+
+    public Page<Transaction> getGuideTransactions(User guide, int pageSize) {
+        return transactionRepository.findByBooking_GuideOrderByPaymentTimestampDesc(
+                guide,
+                PageRequest.of(0, pageSize, Sort.by(Sort.Direction.DESC, "paymentTimestamp")));
     }
 }

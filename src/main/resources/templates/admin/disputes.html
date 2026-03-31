@@ -39,6 +39,10 @@
                     <span th:text="${dispute.reporter.displayName}">Reporter Name</span>
                 </div>
                 <div class="col-md-4">
+                    <strong>Reported User:</strong>
+                    <span th:text="${dispute.reportedUser != null ? dispute.reportedUser.displayName : (dispute.flaggedMessage != null ? dispute.flaggedMessage.sender.displayName : 'Unknown')}">Reported User</span>
+                </div>
+                <div class="col-md-4">
                     <strong>Created:</strong>
                     <span th:text="${#temporals.format(dispute.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2026</span>
                 </div>

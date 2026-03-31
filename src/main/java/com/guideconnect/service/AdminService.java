@@ -17,6 +17,7 @@ import com.guideconnect.model.BookingStatus;
 import com.guideconnect.model.Dispute;
 import com.guideconnect.model.DisputeStatus;
 import com.guideconnect.model.User;
+import com.guideconnect.model.Role;
 import com.guideconnect.repository.BookingRepository;
 import com.guideconnect.repository.DisputeRepository;
 import com.guideconnect.repository.TourListingRepository;
@@ -93,6 +94,29 @@ public class AdminService {
         return disputeRepository.findAll(pageable);
     }
 
+    public Dispute getDisputeById(Long id) {
+        return disputeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Dispute not found with id: " + id));
+    }
+
+    @Transactional
+    public Dispute createDirectDispute(Long reporterId, Long reportedUserId, Long bookingId, String description) {
+        User reporter = userRepository.findById(reporterId)
+                .orElseThrow(() -> new IllegalArgumentException("Reporter not found with id: " + reporterId));
+        User reportedUser = userRepository.findById(reportedUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Reported user not found with id: " + reportedUserId));
+        var booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
+
+        Dispute dispute = new Dispute();
+        dispute.setReporter(reporter);
+        dispute.setReportedUser(reportedUser);
+        dispute.setBooking(booking);
+        dispute.setDescription(description);
+        dispute.setStatus(DisputeStatus.OPEN);
+        return disputeRepository.save(dispute);
+    }
+
     /**
      * Retrieves disputes that still require admin attention.
      * Includes OPEN, UNDER_REVIEW, and ESCALATED statuses.
@@ -106,6 +130,13 @@ public class AdminService {
                 List.of(DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW, DisputeStatus.ESCALATED),
                 pageable
         ).getContent();
+    }
+
+    public long countActiveDisputes() {
+        return disputeRepository.findByStatusIn(
+                List.of(DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW, DisputeStatus.ESCALATED),
+                Pageable.unpaged()
+        ).getTotalElements();
     }
 
     /**
@@ -152,5 +183,15 @@ public class AdminService {
     public List<User> getRecentRegistrations(int limit) {
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
         return userRepository.findAll(pageable).getContent();
+    }
+
+    public Map<String, Object> getReportMetrics() {
+        Map<String, Object> metrics = getDashboardMetrics();
+        metrics.put("totalTourists", userRepository.countByRole(Role.TOURIST));
+        metrics.put("totalGuides", userRepository.countByRole(Role.GUIDE));
+        metrics.put("totalAdmins", userRepository.countByRole(Role.ADMIN));
+        metrics.put("activeDisputeCount", countActiveDisputes());
+        metrics.put("resolvedDisputeCount", disputeRepository.countByStatus(DisputeStatus.RESOLVED));
+        return metrics;
     }
 }

@@ -28,7 +28,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
      * @param booking the booking whose messages to retrieve
      * @return list of messages sorted by timestamp ascending
      */
-    List<Message> findByBookingOrderByTimestampAsc(Booking booking);
+    List<Message> findByBookingAndFlaggedFalseOrderByTimestampAsc(Booking booking);
     long countByBookingAndReceiverAndReadFalse(Booking booking, User receiver);
 
     /**

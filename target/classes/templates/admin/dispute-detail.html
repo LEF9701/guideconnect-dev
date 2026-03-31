@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/header :: head}">
+    <title>Dispute Detail - GuideConnect</title>
+</head>
+<body>
+<nav th:replace="~{fragments/header :: header}"></nav>
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Dispute #<span th:text="${dispute.id}">1</span></h2>
+            <p class="text-muted mb-0" th:if="${dispute.booking != null}">
+                Booking #<span th:text="${dispute.booking.id}">123</span>
+            </p>
+        </div>
+        <a th:href="@{/admin/disputes}" class="btn btn-outline-secondary">Back to Disputes</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Dispute Summary</h5>
+                    <span class="badge"
+                          th:classappend="${dispute.status.name() == 'OPEN' ? 'bg-danger' :
+                                            dispute.status.name() == 'UNDER_REVIEW' ? 'bg-warning text-dark' :
+                                            dispute.status.name() == 'RESOLVED' ? 'bg-success' : 'bg-info'}"
+                          th:text="${dispute.status}">OPEN</span>
+                </div>
+                <div class="card-body">
+                    <p><strong>Reporter:</strong> <span th:text="${dispute.reporter.displayName}">Reporter</span></p>
+                    <p><strong>Reported User:</strong>
+                        <span th:text="${dispute.reportedUser != null ? dispute.reportedUser.displayName : (dispute.flaggedMessage != null ? dispute.flaggedMessage.sender.displayName : 'Unknown')}">Reported User</span>
+                    </p>
+                    <p class="mb-0"><strong>Description:</strong> <span th:text="${dispute.description}">Description</span></p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4" th:if="${dispute.flaggedMessage != null}">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Flagged Message</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Sender:</strong> <span th:text="${dispute.flaggedMessage.sender.displayName}">Sender</span></p>
+                    <p><strong>Receiver:</strong> <span th:text="${dispute.flaggedMessage.receiver.displayName}">Receiver</span></p>
+                    <p><strong>Sent:</strong>
+                        <span th:text="${#temporals.format(dispute.flaggedMessage.timestamp, 'MMM dd, yyyy HH:mm')}">Jan 01, 2026</span>
+                    </p>
+                    <div class="border rounded p-3 bg-light">
+                        <strong>Message Content</strong>
+                        <p class="mb-0 mt-2" th:text="${dispute.flaggedMessage.content}">Message body</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" th:if="${dispute.status.name() == 'OPEN' or dispute.status.name() == 'UNDER_REVIEW'}">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Resolve Dispute</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/disputes/{id}/resolve(id=${dispute.id})}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="resolution">Resolution</label>
+                            <textarea class="form-control" id="resolution" name="resolution" rows="4" required
+                                      placeholder="Explain how this dispute was handled..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="action">Optional user action</label>
+                            <select class="form-select" id="action" name="action">
+                                <option value="">No action</option>
+                                <option value="SUSPEND">Suspend offender</option>
+                                <option value="BAN">Ban offender</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Resolve Dispute</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm" th:if="${dispute.status.name() == 'RESOLVED'}">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Resolution</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2" th:text="${dispute.resolution}">Resolution text</p>
+                    <p class="text-muted mb-0">
+                        Resolved at
+                        <span th:text="${dispute.resolvedAt != null ? #temporals.format(dispute.resolvedAt, 'MMM dd, yyyy HH:mm') : 'N/A'}">Jan 02, 2026</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm" th:if="${dispute.booking != null}">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Booking Context</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Tour:</strong> <span th:text="${dispute.booking.tour.title}">Tour</span></p>
+                    <p><strong>Tourist:</strong> <span th:text="${dispute.booking.tourist.displayName}">Tourist</span></p>
+                    <p><strong>Guide:</strong> <span th:text="${dispute.booking.guide.displayName}">Guide</span></p>
+                    <p><strong>Status:</strong> <span th:text="${dispute.booking.status}">CONFIRMED</span></p>
+                    <a th:href="@{/bookings/{id}(id=${dispute.booking.id})}" class="btn btn-outline-primary btn-sm">Open Booking</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<div th:replace="~{fragments/header :: scripts}"></div>
+</body>
+</html>
