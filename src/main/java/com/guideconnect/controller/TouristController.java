@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Controller for tourist-facing pages.
  *
@@ -89,12 +92,21 @@ public class TouristController {
     public String showBookings(@AuthenticationPrincipal UserDetails principal, Model model) {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        model.addAttribute("user", user);
-        model.addAttribute("bookingHistory", bookingService.findByTourist(
+        var bookingHistory = bookingService.findByTourist(
                 user.getId(),
                 PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "requestedDate")
                         .and(Sort.by(Sort.Direction.DESC, "createdAt")))
-        ));
+        );
+        Set<Long> reviewedBookingIds = new HashSet<>();
+        bookingHistory.getContent().forEach(booking -> {
+            if (reviewService.hasReviewed(booking.getId(), user.getId())) {
+                reviewedBookingIds.add(booking.getId());
+            }
+        });
+
+        model.addAttribute("user", user);
+        model.addAttribute("bookingHistory", bookingHistory);
+        model.addAttribute("reviewedBookingIds", reviewedBookingIds);
         return "tourist/bookings";
     }
 

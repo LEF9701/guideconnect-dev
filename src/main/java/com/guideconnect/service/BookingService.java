@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Optional;
@@ -142,14 +143,14 @@ public class BookingService {
     /**
      * Completes a booking after the tour date has passed, transitioning it
      * to COMPLETED status. The booking can only be completed if the requested
-     * date is in the past.
+     * date is today or in the past.
      *
      * @param bookingId the ID of the booking to complete
      * @param userId    the ID of the user marking the booking complete
      * @return the updated Booking entity
      * @throws IllegalArgumentException if the booking is not found
      * @throws SecurityException        if the user is neither the tourist nor the guide
-     * @throws IllegalStateException    if the tour date has not yet passed or the transition is not valid
+     * @throws IllegalStateException    if the tour date has not yet arrived or the transition is not valid
      */
     @Transactional
     public Booking completeBooking(Long bookingId, Long userId) {
@@ -160,8 +161,8 @@ public class BookingService {
             throw new SecurityException("Only the tourist or guide can complete this booking");
         }
 
-        if (!booking.getRequestedDate().isBefore(LocalDate.now())) {
-            throw new IllegalStateException("Cannot complete booking before the tour date has passed");
+        if (booking.getRequestedDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException("Cannot complete booking before the tour date has arrived");
         }
 
         transitionStatus(booking, BookingStatus.COMPLETED);
@@ -189,6 +190,42 @@ public class BookingService {
         }
 
         transitionStatus(booking, BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
+    }
+
+    /**
+     * Updates the negotiated total price for a booking. The tourist or guide
+     * may update the price while the booking is still under discussion. The
+     * negotiated amount becomes the final total used for later confirmation
+     * and payment processing.
+     *
+     * @param bookingId        the booking ID
+     * @param userId           the participant making the change
+     * @param negotiatedPrice  the newly agreed total price
+     * @return the updated Booking entity
+     */
+    @Transactional
+    public Booking updateNegotiatedPrice(Long bookingId, Long userId, BigDecimal negotiatedPrice) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
+
+        if (!booking.getTourist().getId().equals(userId) && !booking.getGuide().getId().equals(userId)) {
+            throw new SecurityException("Only the tourist or guide can update the negotiated price");
+        }
+
+        if (booking.getStatus() != BookingStatus.REQUESTED && booking.getStatus() != BookingStatus.NEGOTIATING) {
+            throw new IllegalStateException("Price can only be negotiated while the booking is requested or negotiating");
+        }
+
+        if (negotiatedPrice == null || negotiatedPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Negotiated price must be greater than zero");
+        }
+
+        if (booking.getStatus() == BookingStatus.REQUESTED) {
+            transitionStatus(booking, BookingStatus.NEGOTIATING);
+        }
+
+        booking.setTotalPrice(negotiatedPrice.setScale(2, RoundingMode.HALF_UP));
         return bookingRepository.save(booking);
     }
 

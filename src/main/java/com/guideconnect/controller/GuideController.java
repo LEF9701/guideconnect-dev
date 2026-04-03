@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -130,11 +131,16 @@ public class GuideController {
      * @return a redirect to the guide profile page
      */
     @PostMapping("/profile")
-    public String updateProfile(@AuthenticationPrincipal UserDetails principal, User updatedUser) {
+    public String updateProfile(@AuthenticationPrincipal UserDetails principal,
+                                User updatedUser,
+                                @RequestParam(value = "profilePhotoFile", required = false) MultipartFile profilePhotoFile) throws IOException {
         User user = userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        updatedUser.setProfilePhoto(user.getProfilePhoto());
+        saveProfilePhotoIfPresent(updatedUser, profilePhotoFile);
         userService.updateGuideProfile(user.getId(), updatedUser.getDisplayName(),
-                updatedUser.getBiography(), updatedUser.getLanguagesSpoken(), updatedUser.getGuidePricing());
+                updatedUser.getBiography(), updatedUser.getLanguagesSpoken(),
+                updatedUser.getProfilePhoto(), updatedUser.getGuidePricing());
         return "redirect:/guide/profile";
     }
 
@@ -247,21 +253,42 @@ public class GuideController {
     }
     private void saveImageIfPresent(TourListing tour, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                String uploadDir = "src/main/resources/static/images/tours/";
-                Path uploadPath = Paths.get(uploadDir);
-
-                if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-                }
-
-                try (var inputStream = file.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                // Save the relative path so the browser can find it
-                System.out.println("/images/tours/" + fileName);
-                tour.setImgPath("/images/tours/" + fileName);
-                }
+                tour.setImgPath(storeStaticImage(file, "tours"));
         }
         }
+
+    private void saveProfilePhotoIfPresent(User user, MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            user.setProfilePhoto(storeStaticImage(file, "guides"));
+        }
+    }
+
+    private String storeStaticImage(MultipartFile file, String folder) throws IOException {
+        String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "upload";
+        String extension = "";
+        int extensionIndex = originalName.lastIndexOf('.');
+        if (extensionIndex >= 0) {
+            extension = originalName.substring(extensionIndex).toLowerCase(Locale.ROOT);
+        }
+
+        String baseName = extensionIndex >= 0 ? originalName.substring(0, extensionIndex) : originalName;
+        String sanitizedBaseName = baseName.replaceAll("[^a-zA-Z0-9-_]+", "_");
+        if (sanitizedBaseName.isBlank()) {
+            sanitizedBaseName = "image";
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + sanitizedBaseName + extension;
+        byte[] bytes = file.getBytes();
+
+        Path sourceUploadPath = Paths.get("src/main/resources/static/images", folder);
+        Path compiledUploadPath = Paths.get("target/classes/static/images", folder);
+
+        Files.createDirectories(sourceUploadPath);
+        Files.createDirectories(compiledUploadPath);
+
+        Files.write(sourceUploadPath.resolve(fileName), bytes);
+        Files.write(compiledUploadPath.resolve(fileName), bytes);
+
+        return "/images/" + folder + "/" + fileName;
+    }
 }

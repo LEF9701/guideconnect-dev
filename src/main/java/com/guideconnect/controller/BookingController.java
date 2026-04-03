@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -128,7 +129,7 @@ public class BookingController {
         Booking booking = bookingService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
 
-        boolean canComplete = booking.getRequestedDate().isBefore(LocalDate.now());
+        boolean canComplete = !booking.getRequestedDate().isAfter(LocalDate.now());
         boolean hasReviewed = reviewService.hasReviewed(id, user.getId());
 
         model.addAttribute("user", user);
@@ -218,6 +219,16 @@ public class BookingController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         bookingService.cancelBooking(id, user.getId());
         return "redirect:/bookings/" + id;
+    }
+
+    @PostMapping("/{id}/price")
+    public String updateNegotiatedPrice(@PathVariable Long id,
+                                        @RequestParam BigDecimal negotiatedPrice,
+                                        @AuthenticationPrincipal UserDetails principal) {
+        User user = userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        bookingService.updateNegotiatedPrice(id, user.getId(), negotiatedPrice);
+        return "redirect:/messages/booking/" + id + "?priceUpdated=true";
     }
 
     /**

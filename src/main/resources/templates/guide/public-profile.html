@@ -14,7 +14,13 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0">
                     <div class="card-body text-center p-4">
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                        <img th:if="${guide.profilePhoto != null and !#strings.isEmpty(guide.profilePhoto)}"
+                             th:src="@{${guide.profilePhoto}}"
+                             alt="Guide profile photo"
+                             class="rounded-circle border object-fit-cover mb-3"
+                             style="width: 88px; height: 88px;">
+                        <div th:if="${guide.profilePhoto == null or #strings.isEmpty(guide.profilePhoto)}"
+                             class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                              style="width: 88px; height: 88px;">
                             <i class="bi bi-person-fill" style="font-size: 2.8rem;"></i>
                         </div>

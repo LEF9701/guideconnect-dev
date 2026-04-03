@@ -8,6 +8,10 @@
 <nav th:replace="~{fragments/header :: header}"></nav>
 
 <div class="container my-4">
+    <div th:if="${priceUpdated}" class="alert alert-success mb-4">
+        The negotiated price has been updated and will be used as the new booking total.
+    </div>
+
     <!-- Booking Header -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -43,12 +47,48 @@
         </div>
     </div>
 
-    <!-- Confirm/Reject Booking Buttons (Guide only, during negotiation) -->
-    <div th:if="${booking.status.name() == 'NEGOTIATING' and user.role.name() == 'GUIDE'}"
+    <div th:if="${booking.status.name() == 'REQUESTED' or booking.status.name() == 'NEGOTIATING'}"
+         class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Negotiated Price</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <p class="mb-1 text-muted">Current agreed total</p>
+                    <div class="fs-4 fw-bold text-primary"
+                         th:text="'$' + ${#numbers.formatDecimal(booking.totalPrice, 1, 2)}">$110.00</div>
+                    <p class="small text-muted mb-0">
+                        Any agreed update here becomes the new booking total used later for confirmation and payment.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <form th:action="@{/bookings/{id}/price(id=${booking.id})}" method="post" class="row g-2">
+                        <div class="col-sm-8">
+                            <label for="negotiatedPrice" class="form-label">Propose / update total price</label>
+                            <input id="negotiatedPrice" name="negotiatedPrice" type="number" min="1" step="0.01"
+                                   class="form-control"
+                                   th:value="${booking.totalPrice}" required>
+                        </div>
+                        <div class="col-sm-4 d-grid">
+                            <label class="form-label d-none d-sm-block">&nbsp;</label>
+                            <button type="submit" class="btn btn-outline-primary">
+                                Update Price
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm/Reject Booking Buttons (Guide only, during negotiation/request stage) -->
+    <div th:if="${booking.status.name() == 'REQUESTED' or booking.status.name() == 'NEGOTIATING'}"
+         sec:authorize="hasRole('GUIDE')"
          class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
     <span>
         <i class="bi bi-info-circle"></i>
-        Negotiation in progress. Ready to make a decision?
+        Review the latest booking terms and make a decision when ready.
     </span>
         <div class="d-flex gap-2">
             <form th:action="@{/bookings/{id}/reject(id=${booking.id})}" method="post">
@@ -64,27 +104,13 @@
         </div>
     </div>
 
-    <!-- Cancel button for tourist during negotiation -->
-    <div th:if="${booking.status.name() == 'NEGOTIATING' and user.role.name() == 'TOURIST'}"
-         class="alert alert-info d-flex justify-content-between align-items-center mb-4">
-    <span>
-        <i class="bi bi-info-circle"></i>
-        Your booking is being negotiated with the guide.
-    </span>
-        <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
-            <button type="submit" class="btn btn-outline-danger">
-                <i class="bi bi-x-circle"></i> Cancel Booking
-            </button>
-        </form>
-    </div>
-
-    <!-- Also show cancel option for tourist during negotiation -->
-    <div th:if="${booking.status.name() == 'NEGOTIATING'}"
+    <!-- Tourist can still cancel while terms are being discussed -->
+    <div th:if="${booking.status.name() == 'REQUESTED' or booking.status.name() == 'NEGOTIATING'}"
          sec:authorize="hasRole('TOURIST')"
          class="alert alert-info d-flex justify-content-between align-items-center mb-4">
         <span>
             <i class="bi bi-info-circle"></i>
-            Your booking is being negotiated with the guide.
+            Your booking is still being discussed with the guide.
         </span>
         <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post">
             <button type="submit" class="btn btn-outline-danger">

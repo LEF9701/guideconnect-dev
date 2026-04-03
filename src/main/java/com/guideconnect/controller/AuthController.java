@@ -45,10 +45,16 @@ public class AuthController {
      */
     @GetMapping("/login")
     public String showLoginForm(@RequestParam(value = "error", required = false) String error,
+                                @RequestParam(value = "status", required = false) String status,
                                 @RequestParam(value = "logout", required = false) String logout,
                                 Model model) {
         if (error != null) {
             model.addAttribute("error", "Invalid email or password.");
+        }
+        if ("suspended".equals(status)) {
+            model.addAttribute("error", "Your account has been suspended. Please contact an administrator.");
+        } else if ("banned".equals(status)) {
+            model.addAttribute("error", "Your account has been banned. Email us at admin@guideconne.com for assistance.");
         }
         if (logout != null) {
             model.addAttribute("logout", "You have been logged out successfully.");

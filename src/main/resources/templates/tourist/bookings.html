@@ -55,6 +55,11 @@
                                       th:text="${booking.status}">CONFIRMED</span>
                             </td>
                             <td class="text-end">
+                                <a th:if="${booking.status.name() == 'COMPLETED' and !reviewedBookingIds.contains(booking.id)}"
+                                   th:href="@{/reviews/new(bookingId=${booking.id})}"
+                                   class="btn btn-sm btn-outline-success me-2">
+                                    Give Review
+                                </a>
                                 <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-outline-primary">
                                     View
                                 </a>

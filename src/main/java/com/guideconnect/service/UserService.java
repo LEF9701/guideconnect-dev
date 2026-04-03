@@ -56,6 +56,10 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
+                user.getStatus() == AccountStatus.ACTIVE,
+                true,
+                true,
+                user.getStatus() != AccountStatus.BANNED,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
@@ -126,25 +130,27 @@ public class UserService implements UserDetailsService {
 
     /**
      * Updates the profile of a guide user, including display name,
-     * biography, languages spoken, and profile pricing.
+     * biography, languages spoken, profile photo, and profile pricing.
      *
      * @param userId         the ID of the user to update
      * @param displayName    the new display name
      * @param biography      the new biography text
      * @param languagesSpoken the new languages spoken
+     * @param profilePhoto     the guide's profile photo URL
      * @param guidePricing    the guide's profile pricing
      * @return the updated User entity
      * @throws IllegalArgumentException if the user is not found
      */
     @Transactional
     public User updateGuideProfile(Long userId, String displayName, String biography,
-                                   String languagesSpoken, BigDecimal guidePricing) {
+                                   String languagesSpoken, String profilePhoto, BigDecimal guidePricing) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
 
         user.setDisplayName(displayName);
         user.setBiography(biography);
         user.setLanguagesSpoken(languagesSpoken);
+        user.setProfilePhoto(profilePhoto);
         user.setGuidePricing(guidePricing);
         return userRepository.save(user);
     }

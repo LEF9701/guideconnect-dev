@@ -28,11 +28,23 @@
                     <span th:text="${error}">An error occurred.</span>
                 </div>
 
-                <div class="card shadow-sm border-0">
+                        <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
 
                         <!-- Average Rating (read-only) -->
                         <div class="mb-4 text-center">
+                            <div class="mb-3">
+                                <img th:if="${user.profilePhoto != null and !#strings.isEmpty(user.profilePhoto)}"
+                                     th:src="@{${user.profilePhoto}}"
+                                     alt="Guide profile photo"
+                                     class="rounded-circle border object-fit-cover"
+                                     style="width: 96px; height: 96px;">
+                                <div th:if="${user.profilePhoto == null or #strings.isEmpty(user.profilePhoto)}"
+                                     class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center border"
+                                     style="width: 96px; height: 96px;">
+                                    <i class="bi bi-person-fill text-secondary" style="font-size: 2.8rem;"></i>
+                                </div>
+                            </div>
                             <h5 class="text-muted">Your Rating</h5>
                             <div class="display-5 text-warning fw-bold">
                                 <i class="bi bi-star-fill"></i>
@@ -46,7 +58,7 @@
 
                         <hr/>
 
-                        <form th:action="@{/guide/profile}" method="post" th:object="${user}">
+                        <form th:action="@{/guide/profile}" method="post" enctype="multipart/form-data" th:object="${user}">
                             <div class="mb-3">
                                 <label for="displayName" class="form-label">Display Name</label>
                                 <input type="text" class="form-control" id="displayName"
@@ -65,6 +77,13 @@
                                        th:field="*{languagesSpoken}"
                                        placeholder="e.g., English, Spanish, French"/>
                                 <div class="form-text">Comma-separated list of languages you can guide in.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="profilePhotoFile" class="form-label">Upload Profile Photo</label>
+                                <input type="file" class="form-control" id="profilePhotoFile" name="profilePhotoFile"
+                                       accept="image/*"/>
+                                <div class="form-text">Upload an image to show on your guide profile.</div>
                             </div>
 
                             <div class="mb-4">

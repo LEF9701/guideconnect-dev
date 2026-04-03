@@ -1,15 +1,26 @@
 package com.guideconnect.config;
 
+import com.guideconnect.model.AccountStatus;
 import com.guideconnect.service.UserService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
 
 /**
  * Spring Security configuration implementing session-based authentication
@@ -19,8 +30,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final UserService userService;
+
+    public SecurityConfig(UserService userService) {
+        this.userService = userService;
+    }
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
@@ -54,7 +71,23 @@ public class SecurityConfig {
                         response.sendRedirect("/tourist/dashboard");
                     }
                 })
-                .failureUrl("/auth/login?error=true")
+                .failureHandler((request, response, exception) -> {
+                    String redirectUrl = "/auth/login?error=true";
+                    String attemptedEmail = request.getParameter("username");
+
+                    if (attemptedEmail != null) {
+                        var user = userService.findByEmail(attemptedEmail).orElse(null);
+                        if (user != null) {
+                            if (user.getStatus() == AccountStatus.SUSPENDED) {
+                                redirectUrl = "/auth/login?status=suspended";
+                            } else if (user.getStatus() == AccountStatus.BANNED) {
+                                redirectUrl = "/auth/login?status=banned";
+                            }
+                        }
+                    }
+
+                    response.sendRedirect(redirectUrl);
+                })
                 .permitAll()
             )
             .logout(logout -> logout
@@ -68,8 +101,43 @@ public class SecurityConfig {
                 .accessDeniedPage("/error/403")
             );
 
+        http.addFilterAfter(accountStatusEnforcementFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         http.csrf(csrf -> csrf.disable());
         http.headers(headers -> headers.frameOptions(f -> f.disable()));
         return http.build();
+    }
+
+    @Bean
+    public OncePerRequestFilter accountStatusEnforcementFilter() {
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain filterChain) throws ServletException, IOException {
+                Authentication authentication = org.springframework.security.core.context.SecurityContextHolder
+                        .getContext().getAuthentication();
+
+                if (authentication != null
+                        && authentication.isAuthenticated()
+                        && authentication.getPrincipal() instanceof UserDetails userDetails) {
+                    userService.findByEmail(userDetails.getUsername()).ifPresent(user -> {
+                        if (user.getStatus() != AccountStatus.ACTIVE) {
+                            try {
+                                new SecurityContextLogoutHandler().logout(request, response, authentication);
+                                response.sendRedirect("/auth/login?status=" + user.getStatus().name().toLowerCase());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    });
+
+                    if (response.isCommitted()) {
+                        return;
+                    }
+                }
+
+                filterChain.doFilter(request, response);
+            }
+        };
     }
 }
